@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#26733a">
-  <meta name="description" content="Discover Nonie's Food Products and enjoy delicious Filipino pie favorites made for sharing.">
+  <meta name="description" content="Discover Nonie's Food Products and enjoy delicious Filipino pies and juice products made for sharing.">
+
   <title>Nonie's Food Products</title>
 
   <link rel="icon" href="images/193915641_947003332540875_9141155702495262180_n.jpg" type="image/jpeg">
@@ -14,18 +15,79 @@
   <link rel="stylesheet" href="index.css">
 
   <style>
-    /* Dynamic product display */
+    :root {
+      --red: #c9251c;
+      --green: #26733a;
+      --gold: #f7cc42;
+      --cream: #fff8e9;
+      --dark: #2d241b;
+      --muted: #766b5c;
+    }
+
+    /* BUSINESS HOURS */
+    .business-hours {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px 20px;
+      background: var(--cream);
+      border-bottom: 1px solid #eee1cb;
+      color: var(--dark);
+    }
+
+    .business-status-dot {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .business-hours.is-open .business-status-dot {
+      background: var(--green);
+      box-shadow: 0 0 0 4px #26733a20;
+    }
+
+    .business-hours-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .business-hours-info strong {
+      font-size: 14px;
+    }
+
+    .business-hours-info span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .business-time {
+      margin-left: 8px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .business-hours.is-closed .business-time {
+      color: var(--red);
+    }
+
+    /* PRODUCTS */
     .products-status {
       padding: 30px 16px;
       margin-top: 20px;
-      color: var(--muted, #766b5c);
+      color: var(--muted);
       text-align: center;
       line-height: 1.7;
     }
 
     .products-status h3 {
       margin-bottom: 8px;
-      color: var(--dark, #2d241b);
+      color: var(--dark);
     }
 
     .products-status[hidden] {
@@ -48,7 +110,7 @@
     .product-card {
       min-width: 0;
       overflow: hidden;
-      background: white;
+      background: #fff;
       border: 1px solid #eee1cb;
       border-radius: 16px;
       box-shadow: 0 8px 24px #45270f12;
@@ -65,7 +127,7 @@
       width: 100%;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-      background: #fff8e9;
+      background: var(--cream);
     }
 
     .product-info {
@@ -75,26 +137,26 @@
     .product-info small {
       display: inline-block;
       margin-bottom: 8px;
-      color: #26733a;
+      color: var(--green);
       font-weight: 700;
     }
 
     .product-info h3 {
       margin-bottom: 10px;
-      color: #2d241b;
+      color: var(--dark);
       overflow-wrap: anywhere;
     }
 
     .product-info p {
       margin-bottom: 14px;
-      color: #766b5c;
+      color: var(--muted);
       line-height: 1.6;
       overflow-wrap: anywhere;
     }
 
     .product-price {
       margin-bottom: 10px;
-      color: #c9251c;
+      color: var(--red);
       font-size: 1.25rem;
       font-weight: 800;
     }
@@ -105,22 +167,23 @@
       padding: 5px 10px;
       border-radius: 20px;
       background: #eaf6ec;
-      color: #26733a;
+      color: var(--green);
       font-size: 12px;
       font-weight: 700;
     }
 
     .product-info a {
       display: inline-block;
-      color: #26733a;
+      color: var(--green);
       font-weight: 700;
       text-decoration: none;
     }
 
     .product-info a:hover {
-      color: #c9251c;
+      color: var(--red);
     }
 
+    /* FEEDBACK */
     .feedback-status {
       margin: 12px 0;
       font-size: 14px;
@@ -148,15 +211,56 @@
       .product-info {
         padding: 16px;
       }
+
+      .business-hours {
+        gap: 8px;
+        padding: 12px 10px;
+      }
+
+      .business-time {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .product-card {
+        transition: none;
+      }
+
+      .product-card:hover {
+        transform: none;
+      }
     }
   </style>
 </head>
 
 <body>
+  <!-- ANNOUNCEMENT -->
   <div class="announcement">
     A little taste of home, made for sharing!
   </div>
 
+  <!-- BUSINESS HOURS STATUS -->
+  <div
+    class="business-hours is-closed"
+    id="businessHours"
+    aria-live="polite"
+  >
+    <span id="business-status" class="business-status-dot" aria-hidden="true"></span>
+
+    <div class="business-hours-info">
+      <strong id="businessStatusText">Checking business hours...</strong>
+      <span id="businessHoursMessage">
+        Business hours: 5:00 PM – 6:00 PM
+      </span>
+    </div>
+
+    <span class="business-time" id="businessCurrentTime"></span>
+  </div>
+
+  <!-- HEADER -->
   <header>
     <nav aria-label="Main navigation">
       <a class="brand" href="#home">
@@ -172,7 +276,7 @@
 
       <div class="nav-links">
         <a href="#home">Home</a>
-        <a href="#products">Our Pies</a>
+        <a href="#products">Our Products</a>
         <a href="#story">Our Story</a>
         <a href="#feedback">Feedback</a>
         <a href="#contact">Contact</a>
@@ -194,12 +298,12 @@
 
           <p>
             Discover Nonie's Food Products and share comforting
-            Filipino pie favorites with your family and friends.
+            Filipino pies and juice products with your family and friends.
             A delicious treat for merienda, celebrations, and everyday moments.
           </p>
 
           <div class="hero-actions">
-            <a href="#products" class="btn">Explore Our Pies →</a>
+            <a href="#products" class="btn">Explore Our Products →</a>
             <a href="#story" class="btn btn-outline">Meet Nonie's</a>
           </div>
         </div>
@@ -207,20 +311,20 @@
         <img
           class="hero-image"
           src="images/494147847_993917612945509_3629212905898700625_n.jpg"
-          alt="Nonie's Buko Pinyang Pie"
+          alt="Nonie's Buko Pinya Pie"
           fetchpriority="high"
         >
       </div>
     </section>
 
-    <!-- PRODUCTS LOADED FROM SUPABASE -->
+    <!-- PRODUCTS FROM SUPABASE -->
     <section class="section" id="products">
       <div class="container">
         <div class="section-heading">
           <span class="eyebrow">Find your favorite</span>
-          <h2>Our Delicious Pie & Juice Collection</h2>
+          <h2>Our Delicious Pie &amp; Juice Collection</h2>
           <p>
-            Explore our available pies, check their prices,
+            Explore our available products, check their prices,
             and find your next favorite treat.
           </p>
         </div>
@@ -229,7 +333,6 @@
           id="productsLoading"
           class="products-status"
           role="status"
-          aria-live="polite"
         >
           Loading available products...
         </div>
@@ -242,7 +345,7 @@
 
         <div id="productsEmpty" class="products-status" hidden>
           <h3>No products available right now</h3>
-          <p>Please check back later for our delicious pies.</p>
+          <p>Please check back later for our delicious products.</p>
         </div>
 
         <div
@@ -251,7 +354,7 @@
           role="alert"
           hidden
         >
-          Unable to load our products. Please refresh the page and try again.
+          Unable to load products. Please refresh the page and try again.
         </div>
       </div>
     </section>
@@ -277,7 +380,8 @@
 
           <p>
             Nonie's Food Products celebrates those moments
-            with Filipino pie favorites that bring people together.
+            with Filipino pie favorites and refreshing products
+            that bring people together.
           </p>
 
           <a href="#contact" class="btn">Get in Touch →</a>
@@ -293,8 +397,8 @@
           <h2>Share Your Feedback</h2>
 
           <p>
-            Have you tried Nonie's pies? Tell us about your experience.
-            Your feedback helps us make every slice better!
+            Have you tried Nonie's products? Tell us about your experience.
+            Your feedback helps us make every bite better!
           </p>
         </div>
 
@@ -326,7 +430,7 @@
             </div>
 
             <div class="form-group">
-              <label>How would you rate our pies? *</label>
+              <label>How would you rate our products? *</label>
 
               <div class="rating-options" aria-label="Choose a star rating">
                 <input type="radio" id="rating5" name="rating" value="5" required>
@@ -387,7 +491,7 @@
         <h2>Let's make your next merienda special.</h2>
 
         <p>
-          Contact us to ask about prices, available flavors,
+          Contact us to ask about prices, available products,
           and how to order.
         </p>
 
@@ -434,6 +538,73 @@
     );
 
     // =====================================================
+    // BUSINESS HOURS: PHILIPPINE TIME
+    // OPEN 5:00 PM; CLOSED AT 6:00 PM
+    // =====================================================
+    const businessHours = document.getElementById("businessHours");
+    const businessStatusText = document.getElementById("businessStatusText");
+    const businessHoursMessage = document.getElementById("businessHoursMessage");
+    const businessCurrentTime = document.getElementById("businessCurrentTime");
+
+    const manilaTimeFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Manila",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    });
+
+    const manilaDisplayFormatter = new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+
+    function updateBusinessHours() {
+      const now = new Date();
+
+      const timeParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Manila",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+      }).formatToParts(now);
+
+      const parts = Object.fromEntries(
+        timeParts.map(({ type, value }) => [type, value])
+      );
+
+      const hour = Number(parts.hour) % 24;
+      const minute = Number(parts.minute);
+      const second = Number(parts.second);
+
+      const currentTime = hour * 3600 + minute * 60 + second;
+      const openingTime = 5 * 3600;  // 5:00 AM
+      const closingTime = 18 * 3600; // 6:00 PM
+
+      const statusElement = document.getElementById("business-status");
+
+      if (!statusElement) return;
+
+      if (currentTime >= openingTime && currentTime < closingTime) {
+        statusElement.textContent = "🟢 We are OPEN! (5:00 AM – 6:00 PM)";
+        statusElement.className = "business-status open";
+      } else if (currentTime < openingTime) {
+        statusElement.textContent = "🔴 We are CLOSED. We open at 5:00 AM.";
+        statusElement.className = "business-status closed";
+      } else {
+        statusElement.textContent = "🔴 We are CLOSED. We open tomorrow at 5:00 AM.";
+        statusElement.className = "business-status closed";
+      }
+    }
+
+    updateBusinessHours();
+    setInterval(updateBusinessHours, 1000);
+
+    // =====================================================
     // PRODUCT ELEMENTS
     // =====================================================
     const productsContainer =
@@ -452,37 +623,40 @@
     // PRODUCT HELPERS
     // =====================================================
     function formatPrice(price) {
-      const amount = Number(price);
-
-      if (!Number.isFinite(amount)) {
+      if (
+        price === null ||
+        price === undefined ||
+        price === "" ||
+        !Number.isFinite(Number(price))
+      ) {
         return "Price unavailable";
       }
 
       return new Intl.NumberFormat("en-PH", {
         style: "currency",
         currency: "PHP"
-      }).format(amount);
+      }).format(Number(price));
     }
 
     function createProductElement(product) {
       const article = document.createElement("article");
       article.className = "product-card";
 
-      // Image
-      const image = document.createElement("img");
-
-      image.alt = product.name
-        ? `${product.name} from Nonie's Food Products`
-        : "Nonie's Food Products item";
-
-      image.loading = "lazy";
-      image.decoding = "async";
-
-      const imageUrl = typeof product.image_url === "string"
-        ? product.image_url.trim()
-        : "";
+      const imageUrl =
+        typeof product.image_url === "string"
+          ? product.image_url.trim()
+          : "";
 
       if (imageUrl) {
+        const image = document.createElement("img");
+
+        image.alt = product.name
+          ? `${product.name} from Nonie's Food Products`
+          : "Nonie's Food Products item";
+
+        image.loading = "lazy";
+        image.decoding = "async";
+
         try {
           const parsedUrl = new URL(imageUrl, window.location.href);
 
@@ -497,20 +671,19 @@
         } catch {
           image.hidden = true;
         }
-      } else {
-        image.hidden = true;
+
+        image.addEventListener("error", () => {
+          image.hidden = true;
+        });
+
+        article.appendChild(image);
       }
 
-      image.addEventListener("error", () => {
-        image.hidden = true;
-      });
-
-      // Product information
       const info = document.createElement("div");
       info.className = "product-info";
 
       const category = document.createElement("small");
-      category.textContent = "Nonie's favorite";
+      category.textContent = "Available at Nonie's";
 
       const title = document.createElement("h3");
       title.textContent = product.name || "Unnamed product";
@@ -549,8 +722,7 @@
         orderLink
       );
 
-      article.append(image, info);
-
+      article.appendChild(info);
       return article;
     }
 
@@ -600,23 +772,17 @@
       }
     }
 
-    // Initial product load
     loadProducts();
 
     // =====================================================
     // CUSTOMER FEEDBACK FORM
     // =====================================================
-    const feedbackForm =
-      document.getElementById("feedbackForm");
+    const feedbackForm = document.getElementById("feedbackForm");
+    const feedbackStatus = document.getElementById("feedbackStatus");
+    const feedbackSubmit = document.getElementById("feedbackSubmit");
 
-    const feedbackStatus =
-      document.getElementById("feedbackStatus");
-
-    const feedbackSubmit =
-      document.getElementById("feedbackSubmit");
-
-    function showFeedbackStatus(text, type) {
-      feedbackStatus.textContent = text;
+    function showFeedbackStatus(message, type) {
+      feedbackStatus.textContent = message;
       feedbackStatus.className = `feedback-status ${type}`;
     }
 
@@ -631,7 +797,7 @@
         .getElementById("feedbackEmail")
         .value.trim();
 
-      const feedbackMessage = document
+      const message = document
         .getElementById("feedbackMessage")
         .value.trim();
 
@@ -639,7 +805,7 @@
         'input[name="rating"]:checked'
       );
 
-      if (!name || !feedbackMessage || !ratingInput) {
+      if (!name || !message || !ratingInput) {
         showFeedbackStatus(
           "Please enter your name, select a star rating, and write your feedback.",
           "error"
@@ -649,7 +815,7 @@
 
       if (
         name.length > 100 ||
-        feedbackMessage.length > 2000 ||
+        message.length > 2000 ||
         email.length > 254
       ) {
         showFeedbackStatus(
@@ -671,12 +837,11 @@
             name,
             email: email || null,
             rating: Number(ratingInput.value),
-            message: feedbackMessage
+            message
           }]);
 
         if (error) {
           console.error("Supabase feedback error:", error);
-
           throw new Error(
             "We couldn't submit your feedback. Please try again."
           );
