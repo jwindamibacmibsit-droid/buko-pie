@@ -29,6 +29,10 @@
       padding: 0;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     body {
       min-height: 100vh;
       display: flex;
@@ -239,6 +243,11 @@
       box-shadow: 0 0 0 3px #26733a1c;
     }
 
+    input:disabled {
+      background: #f2eee6;
+      cursor: not-allowed;
+    }
+
     .password-input {
       padding-right: 70px !important;
     }
@@ -253,6 +262,11 @@
       color: var(--green);
       font-weight: bold;
       cursor: pointer;
+    }
+
+    .toggle-password:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
 
     .form-options {
@@ -302,14 +316,14 @@
       transition: background .2s, transform .2s;
     }
 
-    .submit-btn:hover {
+    .submit-btn:hover:not(:disabled) {
       background: var(--red-dark);
       transform: translateY(-1px);
     }
 
     .submit-btn:disabled {
       opacity: .65;
-      cursor: wait;
+      cursor: not-allowed;
       transform: none;
     }
 
@@ -337,6 +351,13 @@
       color: var(--green-dark);
     }
 
+    .message.warning {
+      display: block;
+      border: 1px solid #f0d78b;
+      background: #fff8df;
+      color: #795700;
+    }
+
     .secure-note {
       margin-top: 20px;
       color: var(--muted);
@@ -347,6 +368,14 @@
 
     .secure-note span {
       color: var(--green);
+    }
+
+    .attempt-note {
+      margin-top: 12px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
     }
 
     footer {
@@ -479,6 +508,7 @@
           class="message"
           role="alert"
           aria-live="polite"
+          hidden
         ></div>
 
         <form id="loginForm">
@@ -533,6 +563,8 @@
           <button class="submit-btn" id="submitBtn" type="submit">
             Sign In as Admin
           </button>
+
+          <p class="attempt-note" id="attemptNote" aria-live="polite"></p>
         </form>
 
         <p class="secure-note">
@@ -552,9 +584,9 @@
     import { createClient }
       from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Your Supabase project configuration.
-    // A publishable key is safe for browser use when RLS is configured.
-    // Never place a service_role or secret key in this file.
+    // =====================================================
+    // SUPABASE CONFIGURATION
+    // =====================================================
     const SUPABASE_URL =
       "https://ozzaojmvymvizyndrmkr.supabase.co";
 
@@ -573,54 +605,290 @@
       }
     );
 
+    // =====================================================
+    // RATE-LIMIT CONFIGURATION
+    // =====================================================
+    const MAX_ATTEMPTS = 3;
+    const LOCKOUT_DURATION = 60 * 60 * 1000; // One hour
+
+    // Browser-side deterrent only. This is not server-enforced.
+    const RATE_LIMIT_KEY = "nonies_admin_login_rate_limit_v1";
+
+    let countdownInterval = null;
+    let isSubmitting = false;
+    let isRedirecting = false;
+
     const form = document.getElementById("loginForm");
     const message = document.getElementById("message");
     const submitBtn = document.getElementById("submitBtn");
+    const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
     const togglePassword = document.getElementById("togglePassword");
+    const attemptNote = document.getElementById("attemptNote");
 
     document.getElementById("year").textContent =
       new Date().getFullYear();
 
+    // =====================================================
+    // MESSAGE HELPERS
+    // =====================================================
     function showMessage(text, type = "error") {
       message.textContent = text;
       message.className = `message ${type}`;
+      message.hidden = false;
     }
 
+    function clearMessage() {
+      message.textContent = "";
+      message.className = "message";
+      message.hidden = true;
+    }
+
+    function setFormDisabled(disabled) {
+      emailInput.disabled = disabled;
+      passwordInput.disabled = disabled;
+      togglePassword.disabled = disabled;
+
+      const remember = document.getElementById("remember");
+      remember.disabled = disabled;
+
+      submitBtn.disabled = disabled;
+    }
+
+    // =====================================================
+    // LOCAL RATE-LIMIT STATE
+    // =====================================================
+    function getRateLimitState() {
+      try {
+        const raw = localStorage.getItem(RATE_LIMIT_KEY);
+
+        if (!raw) {
+          return { attempts: 0, lockUntil: 0 };
+        }
+
+        const state = JSON.parse(raw);
+
+        const attempts = Number(state.attempts) || 0;
+        const lockUntil = Number(state.lockUntil) || 0;
+
+        if (!Number.isFinite(attempts) ||
+            !Number.isFinite(lockUntil)) {
+          return { attempts: 0, lockUntil: 0 };
+        }
+
+        if (lockUntil && Date.now() >= lockUntil) {
+          const reset = { attempts: 0, lockUntil: 0 };
+          saveRateLimitState(reset);
+          return reset;
+        }
+
+        return {
+          attempts: Math.max(0, attempts),
+          lockUntil: Math.max(0, lockUntil)
+        };
+      } catch (error) {
+        console.error("Could not read login limit state:", error);
+        return { attempts: 0, lockUntil: 0 };
+      }
+    }
+
+    function saveRateLimitState(state) {
+      try {
+        localStorage.setItem(
+          RATE_LIMIT_KEY,
+          JSON.stringify(state)
+        );
+      } catch (error) {
+        console.error("Could not save login limit state:", error);
+      }
+    }
+
+    function clearRateLimitState() {
+      try {
+        localStorage.removeItem(RATE_LIMIT_KEY);
+      } catch (error) {
+        console.error("Could not reset login limit state:", error);
+      }
+    }
+
+    function formatRemainingTime(milliseconds) {
+      const totalSeconds = Math.max(
+        0,
+        Math.ceil(milliseconds / 1000)
+      );
+
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      return [
+        String(hours).padStart(2, "0"),
+        String(minutes).padStart(2, "0"),
+        String(seconds).padStart(2, "0")
+      ].join(":");
+    }
+
+    // =====================================================
+    // LOCKOUT COUNTDOWN
+    // =====================================================
+    function stopCountdown() {
+      if (countdownInterval !== null) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    }
+
+    function updateLockoutUI() {
+      const state = getRateLimitState();
+      const remaining = state.lockUntil - Date.now();
+
+      if (state.lockUntil && remaining > 0) {
+        setFormDisabled(true);
+
+        showMessage(
+          `Too many failed login attempts. Please wait ${formatRemainingTime(remaining)} before trying again.`,
+          "warning"
+        );
+
+        submitBtn.textContent =
+          `Locked · ${formatRemainingTime(remaining)}`;
+
+        attemptNote.textContent =
+          "Login is temporarily disabled for one hour after 3 failed attempts.";
+
+        return true;
+      }
+
+      stopCountdown();
+
+      if (state.lockUntil && remaining <= 0) {
+        clearRateLimitState();
+      }
+
+      setFormDisabled(false);
+      submitBtn.textContent = "Sign In as Admin";
+
+      const currentState = getRateLimitState();
+
+      if (currentState.attempts > 0) {
+        const left = MAX_ATTEMPTS - currentState.attempts;
+
+        attemptNote.textContent =
+          `${left} failed ${left === 1 ? "attempt" : "attempts"} remaining before a one-hour lockout.`;
+      } else {
+        attemptNote.textContent =
+          `${MAX_ATTEMPTS} attempts allowed before a one-hour lockout.`;
+      }
+
+      return false;
+    }
+
+    function startCountdown() {
+      stopCountdown();
+
+      updateLockoutUI();
+
+      countdownInterval = setInterval(() => {
+        const stillLocked = updateLockoutUI();
+
+        if (!stillLocked) {
+          stopCountdown();
+          clearMessage();
+        }
+      }, 1000);
+    }
+
+    // =====================================================
+    // FAILED LOGIN ATTEMPTS
+    // =====================================================
+    function recordFailedAttempt() {
+      const state = getRateLimitState();
+
+      // Do not record additional failures while locked.
+      if (state.lockUntil > Date.now()) {
+        updateLockoutUI();
+        return;
+      }
+
+      const attempts = state.attempts + 1;
+
+      if (attempts >= MAX_ATTEMPTS) {
+        const newState = {
+          attempts: MAX_ATTEMPTS,
+          lockUntil: Date.now() + LOCKOUT_DURATION
+        };
+
+        saveRateLimitState(newState);
+        startCountdown();
+
+        showMessage(
+          "You have reached the maximum of 3 failed login attempts. Sign-in is locked for one hour.",
+          "warning"
+        );
+
+        return;
+      }
+
+      saveRateLimitState({
+        attempts,
+        lockUntil: 0
+      });
+
+      const remaining = MAX_ATTEMPTS - attempts;
+
+      attemptNote.textContent =
+        `${remaining} failed ${remaining === 1 ? "attempt" : "attempts"} remaining before a one-hour lockout.`;
+    }
+
+    // =====================================================
+    // PASSWORD VISIBILITY
+    // =====================================================
     togglePassword.addEventListener("click", () => {
+      if (togglePassword.disabled) return;
+
       const show = passwordInput.type === "password";
 
       passwordInput.type = show ? "text" : "password";
       togglePassword.textContent = show ? "Hide" : "Show";
-      togglePassword.setAttribute("aria-pressed", String(show));
+
+      togglePassword.setAttribute(
+        "aria-pressed",
+        String(show)
+      );
     });
 
-    // If an existing session belongs to an admin, send them to the dashboard.
+    // =====================================================
+    // CHECK EXISTING SESSION
+    // =====================================================
     async function checkExistingSession() {
-      const { data: { session }, error } =
-        await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
 
-      if (error || !session?.user) return;
+      if (error || !data.session?.user) return;
 
       const { data: admin, error: adminError } = await supabase
         .from("adminlogin")
         .select("id, role")
-        .eq("id", session.user.id)
+        .eq("id", data.session.user.id)
         .maybeSingle();
 
       if (!adminError && admin && admin.role === "admin") {
+        isRedirecting = true;
         window.location.replace("dashboard.html");
       }
     }
 
-    checkExistingSession();
-
+    // =====================================================
+    // ADMIN LOGIN
+    // =====================================================
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const email = document.getElementById("email")
-        .value.trim();
+      if (isSubmitting || isRedirecting) return;
 
+      // Check the lockout before sending any authentication request.
+      if (updateLockoutUI()) return;
+
+      const email = emailInput.value.trim();
       const password = passwordInput.value;
 
       if (!email || !password) {
@@ -628,34 +896,44 @@
         return;
       }
 
-      submitBtn.disabled = true;
+      isSubmitting = true;
+      setFormDisabled(true);
       submitBtn.textContent = "Verifying admin...";
-      message.className = "";
-      message.textContent = "";
+      clearMessage();
 
       try {
-        // Step 1: Authenticate with Supabase Auth.
-        const { data, error } =
-          await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
+        // Step 1: Authenticate through Supabase Auth.
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
         if (error) {
-          showMessage(
-            error.message === "Invalid login credentials"
-              ? "Incorrect email or password. Please try again."
-              : error.message
-          );
+          console.error("Authentication failed:", error);
+
+          // Count failed authentication attempts.
+          recordFailedAttempt();
+
+          const state = getRateLimitState();
+
+          if (!state.lockUntil) {
+            showMessage(
+              "Incorrect email or password. Please try again."
+            );
+          }
+
           return;
         }
 
         if (!data.session || !data.user) {
-          showMessage("Unable to establish your login session.");
+          // Authentication did not produce a usable session.
+          showMessage(
+            "Unable to establish your login session. Please try again."
+          );
           return;
         }
 
-        // Step 2: Check that this exact Auth user is an admin.
+        // Step 2: Verify this authenticated user is an administrator.
         const { data: admin, error: adminError } = await supabase
           .from("adminlogin")
           .select("id, email, full_name, role")
@@ -664,10 +942,11 @@
 
         if (adminError) {
           console.error("Admin verification failed:", adminError);
+
           await supabase.auth.signOut();
 
           showMessage(
-            "Unable to verify admin access. Check that adminlogin exists and its SELECT policy permits admins to read their own record."
+            "Unable to verify admin access. Check the adminlogin table and its SELECT policies."
           );
           return;
         }
@@ -675,13 +954,33 @@
         if (!admin || admin.role !== "admin") {
           await supabase.auth.signOut();
 
-          showMessage(
-            "Access denied. This account is not registered as an administrator."
-          );
+          // A valid account without admin privileges must not enter
+          // the dashboard. Count this as a rejected login attempt.
+          recordFailedAttempt();
+
+          const state = getRateLimitState();
+
+          if (!state.lockUntil) {
+            showMessage(
+              "Access denied. This account is not registered as an administrator."
+            );
+          }
+
           return;
         }
 
-        showMessage("Admin login successful! Redirecting...", "success");
+        // Reset failed attempts after successful admin authentication.
+        clearRateLimitState();
+        stopCountdown();
+
+        isRedirecting = true;
+
+        showMessage(
+          "Admin login successful! Redirecting...",
+          "success"
+        );
+
+        submitBtn.textContent = "Login successful...";
 
         window.location.replace("dashboard.html");
       } catch (error) {
@@ -691,10 +990,31 @@
           "Unable to connect to Supabase. Check your internet connection and project configuration."
         );
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Sign In as Admin";
+        isSubmitting = false;
+
+        if (!isRedirecting) {
+          updateLockoutUI();
+        }
       }
     });
+
+    // =====================================================
+    // STARTUP
+    // =====================================================
+    async function init() {
+      // Restore an active lockout when the page is reopened.
+      if (updateLockoutUI()) {
+        startCountdown();
+      }
+
+      try {
+        await checkExistingSession();
+      } catch (error) {
+        console.error("Session check failed:", error);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
