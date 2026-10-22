@@ -1,0 +1,1279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff8e9">
+  <title>Admin Dashboard | Nonie's Food Products</title>
+
+  <link rel="icon" href="images/193915641_947003332540875_9141155702495262180_n.jpg">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --red: #c9251c;
+      --red-dark: #991b15;
+      --green: #26733a;
+      --green-dark: #1d592d;
+      --gold: #f7cc42;
+      --cream: #fff8e9;
+      --dark: #2d241b;
+      --muted: #766b5c;
+      --border: #eee1cb;
+      --white: #fff;
+      --shadow: 0 12px 35px #45270f0d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--dark);
+      background:
+        radial-gradient(circle at 95% 5%, #f7cc4220, transparent 24%),
+        var(--cream);
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { text-decoration: none; color: inherit; }
+
+    .announcement {
+      padding: 8px 16px;
+      background: var(--green);
+      color: white;
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: .3px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 28px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 3px 12px #00000008;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      color: var(--red);
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 2px;
+      color: var(--green);
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+    }
+
+    .avatar {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--green);
+      color: white;
+      font-weight: bold;
+    }
+
+    .admin-name { font-size: 13px; font-weight: bold; }
+    .admin-role { font-size: 11px; color: var(--muted); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      border-radius: 24px;
+      padding: 11px 17px;
+      font-size: 13px;
+      font-weight: bold;
+      transition: .2s;
+    }
+
+    .btn-red { color: white; background: var(--red); }
+    .btn-red:hover { background: var(--red-dark); transform: translateY(-1px); }
+    .btn-green { color: white; background: var(--green); }
+    .btn-green:hover { background: var(--green-dark); }
+    .btn-light { color: var(--green); background: #eaf4eb; }
+    .btn-light:hover { background: #dceedd; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr);
+      min-height: calc(100vh - 105px);
+    }
+
+    .sidebar {
+      padding: 25px 15px;
+      background: white;
+      border-right: 1px solid var(--border);
+    }
+
+    .side-label {
+      padding: 0 13px;
+      margin: 4px 0 13px;
+      color: #a69a88;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      padding: 13px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #6e6254;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 600;
+      transition: .2s;
+    }
+
+    .nav-item:hover { background: #fff5e4; color: var(--red); }
+
+    .nav-item.active {
+      color: white;
+      background: var(--green);
+      box-shadow: 0 5px 12px #26733a24;
+    }
+
+    .nav-item svg { width: 18px; height: 18px; }
+
+    .sidebar-note {
+      margin: 35px 3px 0;
+      padding: 17px;
+      border: 1px solid #f2d989;
+      border-radius: 16px;
+      background: #fff8dc;
+    }
+
+    .sidebar-note strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+    }
+
+    .sidebar-note p {
+      color: #786847;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    main { min-width: 0; padding: 30px; }
+
+    .mobile-menu {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      margin-bottom: 7px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.7px;
+      text-transform: uppercase;
+    }
+
+    h1 { font-size: clamp(25px, 3vw, 32px); letter-spacing: -.8px; }
+    .subtitle { margin-top: 7px; color: var(--muted); font-size: 14px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 17px;
+      margin-bottom: 26px;
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      padding: 21px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card::after {
+      position: absolute;
+      content: "";
+      right: -22px;
+      bottom: -28px;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: var(--stat-tint, #f7cc4220);
+    }
+
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stat-label { color: var(--muted); font-size: 12px; font-weight: 600; }
+
+    .stat-icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      color: var(--stat-color, var(--green));
+      background: var(--stat-tint, #eaf4eb);
+    }
+
+    .stat-icon svg { width: 20px; height: 20px; }
+    .stat-number { margin-top: 16px; font-size: 32px; font-weight: 800; }
+    .stat-foot { margin-top: 5px; color: var(--muted); font-size: 11px; }
+
+    .content-card {
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 22px 23px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-heading h2 { font-size: 17px; }
+    .card-heading p { margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 190px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fffdf8;
+    }
+
+    .search-box svg { width: 16px; color: var(--muted); }
+    .search-box input {
+      width: 100%;
+      min-width: 0;
+      outline: none;
+      border: 0;
+      background: transparent;
+      color: var(--dark);
+      font-size: 12px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+
+    th {
+      padding: 13px 20px;
+      background: #fffdf8;
+      color: #8c7c68;
+      font-size: 10px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 16px 20px;
+      border-top: 1px solid #f3eadc;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover { background: #fffdf8; }
+    .customer-name { font-weight: 700; font-size: 13px; }
+    .customer-email { display: block; margin-top: 4px; color: var(--muted); }
+    .message-preview { max-width: 330px; line-height: 1.6; overflow-wrap: anywhere; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-unread { color: #9a5610; background: #fff0d6; }
+    .status-read { color: var(--green); background: #e8f5e9; }
+
+    .row-actions { display: flex; align-items: center; gap: 7px; }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: white;
+      color: var(--green);
+    }
+
+    .icon-btn:hover { background: #edf6ee; }
+    .icon-btn.delete { color: var(--red); }
+    .icon-btn.delete:hover { background: #fff0ee; }
+    .icon-btn svg { width: 15px; height: 15px; }
+
+    .empty-state, .loading-state {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .empty-state svg { width: 38px; height: 38px; margin-bottom: 12px; color: var(--green); }
+    .empty-state strong { display: block; margin-bottom: 5px; color: var(--dark); font-size: 15px; }
+
+    .activity-list { padding: 5px 22px; }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 17px 0;
+      border-bottom: 1px solid #f3eadc;
+    }
+
+    .activity-item:last-child { border-bottom: 0; }
+
+    .activity-icon {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #eaf4eb;
+      color: var(--green);
+    }
+
+    .activity-icon svg { width: 18px; }
+    .activity-title { font-size: 13px; font-weight: 700; }
+    .activity-time { margin-top: 4px; color: var(--muted); font-size: 11px; }
+
+    .footer {
+      padding: 12px 0 3px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 100;
+      max-width: min(400px, calc(100vw - 44px));
+      padding: 14px 18px;
+      color: white;
+      background: var(--green-dark);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px #0002;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: .25s;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--red-dark); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: #21170f99;
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      width: min(540px, 100%);
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 25px;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 20px 80px #0003;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .modal-head h2 { font-size: 20px; }
+    .modal-close {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 9px;
+      background: #fff3e2;
+      color: var(--dark);
+    }
+
+    .detail-label {
+      margin: 16px 0 5px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .detail-value {
+      overflow-wrap: anywhere;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 1150px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 24px; }
+      .layout { grid-template-columns: 220px minmax(0, 1fr); }
+    }
+
+    @media (max-width: 760px) {
+      .topbar { padding: 11px 16px; min-height: 68px; }
+      .brand img { width: 42px; height: 42px; }
+      .brand-name { font-size: 14px; }
+      .brand small { font-size: 9px; }
+      .admin-chip { padding: 5px; border: 0; background: transparent; }
+      .admin-chip .admin-info { display: none; }
+      .top-actions { gap: 6px; }
+      .top-actions .btn { padding: 10px; font-size: 0; }
+      .top-actions .btn svg { width: 17px; height: 17px; }
+      .layout { display: block; }
+      .sidebar {
+        display: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 15px;
+      }
+      .sidebar.open { display: block; }
+      .sidebar-note { display: none; }
+      .mobile-menu { display: flex; }
+      main { padding: 20px 15px; }
+      .stats { gap: 10px; }
+      .stat-card { padding: 16px; border-radius: 14px; }
+      .stat-number { font-size: 27px; }
+      .stat-label { font-size: 11px; }
+      .stat-icon { width: 34px; height: 34px; }
+      .page-heading { margin-bottom: 20px; }
+      .card-heading { padding: 17px; }
+      .toolbar { width: 100%; }
+      .search-box { flex: 1; min-width: 0; }
+      .table-wrap { overflow-x: auto; }
+      table { min-width: 720px; }
+    }
+
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: 1fr; }
+      .page-heading .btn { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="announcement">
+    NONIE'S FOOD PRODUCTS · ADMINISTRATION PORTAL
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Nonie's Food Products home">
+      <img src="images/193915641_947003332540875_9141155702495262180_n.jpg" alt="Nonie's logo">
+      <span class="brand-name">
+        Nonie's Food Products
+        <small>ADMIN DASHBOARD</small>
+      </span>
+    </a>
+
+    <div class="top-actions">
+      <div class="admin-chip">
+        <div class="avatar" id="avatar">A</div>
+        <div class="admin-info">
+          <div class="admin-name" id="adminName">Administrator</div>
+          <div class="admin-role">Authorized admin</div>
+        </div>
+      </div>
+
+      <button class="btn btn-red" id="logoutBtn" type="button">
+        <i data-lucide="log-out"></i> Sign out
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-label">Workspace</div>
+
+      <button class="nav-item active" data-section="overview" type="button">
+        <i data-lucide="layout-dashboard"></i> Overview
+      </button>
+
+      <button class="nav-item" data-section="messages" type="button">
+        <i data-lucide="mail"></i> Customer Messages
+      </button>
+
+      <button class="nav-item" data-section="activity" type="button">
+        <i data-lucide="activity"></i> Recent Activity
+      </button>
+
+      <div class="side-label" style="margin-top:30px">Website</div>
+
+      <a class="nav-item" href="index.html">
+        <i data-lucide="external-link"></i> View Landing Page
+      </a>
+
+      <div class="sidebar-note">
+        <strong>Fresh from Nonie's kitchen!</strong>
+        <p>Manage customer inquiries and keep track of messages sent through your website.</p>
+      </div>
+    </aside>
+
+    <main>
+      <div class="mobile-menu">
+        <button class="btn btn-light" id="menuBtn" type="button">
+          <i data-lucide="menu"></i> Menu
+        </button>
+      </div>
+
+      <section id="overviewSection">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Welcome back</div>
+            <h1>Dashboard Overview</h1>
+            <p class="subtitle">Here's what's happening with your website today.</p>
+          </div>
+
+          <button class="btn btn-green" id="refreshBtn" type="button">
+            <i data-lucide="refresh-cw"></i> Refresh data
+          </button>
+        </div>
+
+        <div class="stats">
+          <article class="stat-card" style="--stat-color:var(--green);--stat-tint:#eaf4eb">
+            <div class="stat-top">
+              <span class="stat-label">Total Messages</span>
+              <span class="stat-icon"><i data-lucide="mail"></i></span>
+            </div>
+            <div class="stat-number" id="totalMessages">—</div>
+            <div class="stat-foot">All customer inquiries</div>
+          </article>
+
+          <article class="stat-card" style="--stat-color:var(--red);--stat-tint:#fff0ee">
+            <div class="stat-top">
+              <span class="stat-label">Unread Messages</span>
+              <span class="stat-icon"><i data-lucide="mail-open"></i></span>
+            </div>
+            <div class="stat-number" id="unreadMessages">—</div>
+            <div class="stat-foot">Messages needing attention</div>
+          </article>
+
+          <article class="stat-card" style="--stat-color:#ad7900;--stat-tint:#fff6d9">
+            <div class="stat-top">
+              <span class="stat-label">Today's Messages</span>
+              <span class="stat-icon"><i data-lucide="calendar-days"></i></span>
+            </div>
+            <div class="stat-number" id="todayMessages">—</div>
+            <div class="stat-foot">Received today</div>
+          </article>
+
+          <article class="stat-card" style="--stat-color:var(--green);--stat-tint:#eaf4eb">
+            <div class="stat-top">
+              <span class="stat-label">Admin Status</span>
+              <span class="stat-icon"><i data-lucide="shield-check"></i></span>
+            </div>
+            <div class="stat-number" style="font-size:25px">Active</div>
+            <div class="stat-foot">Authenticated session</div>
+          </article>
+        </div>
+
+        <section class="content-card" id="messagesCard">
+          <div class="card-heading">
+            <div>
+              <h2>Customer Messages</h2>
+              <p>Read and manage inquiries from your visitors.</p>
+            </div>
+
+            <div class="toolbar">
+              <label class="search-box">
+                <i data-lucide="search"></i>
+                <input id="searchInput" type="search" placeholder="Search messages..." aria-label="Search messages">
+              </label>
+
+              <button class="btn btn-light" id="allMessagesBtn" type="button">
+                View all
+              </button>
+            </div>
+          </div>
+
+          <div id="messageStatus" class="loading-state">Checking your admin session...</div>
+
+          <div class="table-wrap" id="tableWrap" hidden>
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Message</th>
+                  <th>Date received</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="messagesBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="content-card" id="activitySection">
+        <div class="card-heading">
+          <div>
+            <h2>Recent Activity</h2>
+            <p>Your latest customer inquiries.</p>
+          </div>
+        </div>
+        <div class="activity-list" id="activityList">
+          <div class="loading-state">Loading recent activity...</div>
+        </div>
+      </section>
+
+      <div class="footer">
+        © <span id="year"></span> Nonie's Food Products. Made with care.
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="modalTitle">Message details</h2>
+        <button class="modal-close" id="closeModal" type="button" aria-label="Close message">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div id="messageDetails"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
+        <button class="btn btn-green" id="markReadBtn" type="button">
+          <i data-lucide="check-circle"></i> Mark as read
+        </button>
+        <button class="btn btn-light" id="closeModalBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    // =========================================================
+    // SUPABASE CONFIGURATION
+    // Keep this key publishable/anon only. Never put a service
+    // role key or database password in frontend HTML.
+    // =========================================================
+    const SUPABASE_URL = "https://ozzaojmvymvizyndrmkr.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6iMwqiQciIxVmwyRAvwuWA_FGKEIG-x";
+
+    // IMPORTANT:
+    // Change MESSAGE_TABLE and field names below to match your
+    // actual Supabase messages table if necessary.
+    const MESSAGE_TABLE = "messages";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    let currentAdmin = null;
+    let messages = [];
+    let selectedMessage = null;
+    let showAllMessages = false;
+    let toastTimer = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function formatDate(value) {
+      if (!value) return "Date unavailable";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Date unavailable";
+
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function isUnread(message) {
+      // Adapt this to your actual schema if you use a different
+      // status column, e.g. read_at or status = 'read'.
+      if ("is_read" in message) return message.is_read === false;
+      if ("read" in message) return message.read === false;
+      if ("status" in message) {
+        return String(message.status).toLowerCase() === "unread";
+      }
+      return false;
+    }
+
+    function messageText(message) {
+      return message.message ?? message.content ?? message.body ?? "";
+    }
+
+    function customerName(message) {
+      return message.name ?? message.full_name ?? message.customer_name ?? "Website visitor";
+    }
+
+    function customerEmail(message) {
+      return message.email ?? message.customer_email ?? "No email provided";
+    }
+
+    function messageDate(message) {
+      return message.created_at ?? message.sent_at ?? message.date ?? null;
+    }
+
+    function showToast(text, isError = false) {
+      const toast = $("toast");
+      toast.textContent = text;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("show");
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
+    }
+
+    function setLoading(text) {
+      $("messageStatus").hidden = false;
+      $("messageStatus").textContent = text;
+      $("tableWrap").hidden = true;
+    }
+
+    function setMessageError(error) {
+      $("messageStatus").hidden = false;
+      $("tableWrap").hidden = true;
+
+      const safeError = escapeHTML(error);
+      $("messageStatus").innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="alert-circle"></i>
+          <strong>Unable to load messages</strong>
+          <p>${safeError}</p>
+          <p style="margin-top:10px">Check your Supabase table name, column names, and Row Level Security policies.</p>
+        </div>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================
+    // AUTHENTICATION AND ADMIN CHECK
+    // =========================================================
+    async function verifyAdmin() {
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      if (sessionError || !sessionData.session) {
+        window.location.replace("login.html");
+        return false;
+      }
+
+      const user = sessionData.session.user;
+
+      const { data: admin, error: adminError } = await supabaseClient
+        .from("adminlogin")
+        .select("id, email, full_name, role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (
+        adminError ||
+        !admin ||
+        admin.role !== "admin"
+      ) {
+        await supabaseClient.auth.signOut();
+        window.location.replace("login.html");
+        return false;
+      }
+
+      currentAdmin = admin;
+
+      const displayName = admin.full_name || admin.email || "Administrator";
+      $("adminName").textContent = displayName;
+      $("avatar").textContent = displayName.trim().charAt(0).toUpperCase();
+
+      return true;
+    }
+
+    // =========================================================
+    // LOAD MESSAGES
+    // =========================================================
+    async function loadMessages() {
+      setLoading("Loading customer messages...");
+
+      // This query expects the table to have created_at.
+      const { data, error } = await supabaseClient
+        .from(MESSAGE_TABLE)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (error) {
+        console.error("Supabase message query failed:", error);
+        setMessageError(
+          error.message +
+          " — The configured table is '" + MESSAGE_TABLE + "'."
+        );
+        return;
+      }
+
+      messages = data || [];
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      const unread = messages.filter(isUnread);
+      const today = new Date();
+      const todayCount = messages.filter((message) => {
+        const value = messageDate(message);
+        if (!value) return false;
+        const date = new Date(value);
+
+        return !Number.isNaN(date.getTime()) &&
+          date.getFullYear() === today.getFullYear() &&
+          date.getMonth() === today.getMonth() &&
+          date.getDate() === today.getDate();
+      }).length;
+
+      $("totalMessages").textContent = messages.length.toLocaleString();
+      $("unreadMessages").textContent = unread.length.toLocaleString();
+      $("todayMessages").textContent = todayCount.toLocaleString();
+
+      renderMessages();
+      renderActivity();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderMessages() {
+      const query = $("searchInput").value.trim().toLowerCase();
+
+      let filtered = messages.filter((message) => {
+        const combined = [
+          customerName(message),
+          customerEmail(message),
+          messageText(message)
+        ].join(" ").toLowerCase();
+
+        return combined.includes(query);
+      });
+
+      if (!showAllMessages) filtered = filtered.slice(0, 8);
+
+      $("messageStatus").hidden = true;
+      $("tableWrap").hidden = false;
+
+      if (!filtered.length) {
+        $("messagesBody").innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i data-lucide="inbox"></i>
+                <strong>No messages found</strong>
+                <p>New customer inquiries will appear here.</p>
+              </div>
+            </td>
+          </tr>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      $("messagesBody").innerHTML = filtered.map((message) => {
+        const unread = isUnread(message);
+        const name = escapeHTML(customerName(message));
+        const email = escapeHTML(customerEmail(message));
+        const text = escapeHTML(messageText(message));
+        const date = escapeHTML(formatDate(messageDate(message)));
+        const id = escapeHTML(message.id);
+
+        return `
+          <tr>
+            <td>
+              <div class="customer-name">${name}</div>
+              <span class="customer-email">${email}</span>
+            </td>
+            <td><div class="message-preview">${text || "No message content"}</div></td>
+            <td>${date}</td>
+            <td>
+              <span class="status ${unread ? "status-unread" : "status-read"}">
+                ${unread ? "● Unread" : "✓ Read"}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="icon-btn" data-action="view" data-id="${id}"
+                  type="button" aria-label="View message" title="View message">
+                  <i data-lucide="eye"></i>
+                </button>
+                <button class="icon-btn delete" data-action="delete" data-id="${id}"
+                  type="button" aria-label="Delete message" title="Delete message">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderActivity() {
+      const latest = [...messages]
+        .sort((a, b) => new Date(messageDate(b) || 0) - new Date(messageDate(a) || 0))
+        .slice(0, 5);
+
+      if (!latest.length) {
+        $("activityList").innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="activity"></i>
+            <strong>No recent activity</strong>
+            <p>Customer activity will appear here when messages arrive.</p>
+          </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      $("activityList").innerHTML = latest.map((message) => `
+        <div class="activity-item">
+          <div class="activity-icon"><i data-lucide="mail"></i></div>
+          <div>
+            <div class="activity-title">
+              New inquiry from ${escapeHTML(customerName(message))}
+            </div>
+            <div class="activity-time">${escapeHTML(formatDate(messageDate(message)))}</div>
+          </div>
+        </div>
+      `).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================
+    // VIEW MESSAGE DETAILS
+    // =========================================================
+    async function viewMessage(id) {
+      selectedMessage = messages.find((message) => String(message.id) === String(id));
+      if (!selectedMessage) return;
+
+      const message = selectedMessage;
+
+      $("messageDetails").innerHTML = `
+        <div class="detail-label">Customer</div>
+        <div class="detail-value">${escapeHTML(customerName(message))}</div>
+
+        <div class="detail-label">Email</div>
+        <div class="detail-value">${escapeHTML(customerEmail(message))}</div>
+
+        <div class="detail-label">Received</div>
+        <div class="detail-value">${escapeHTML(formatDate(messageDate(message)))}</div>
+
+        <div class="detail-label">Message</div>
+        <div class="detail-value">${escapeHTML(messageText(message) || "No message content")}</div>
+      `;
+
+      $("markReadBtn").hidden = !isUnread(message);
+      $("messageModal").classList.add("show");
+
+      if (isUnread(message)) {
+        await markMessageRead(message);
+      }
+    }
+
+    async function markMessageRead(message) {
+      if (!message || !isUnread(message)) return;
+
+      // Adapt the update if your schema uses a different read-status
+      // field. This assumes a boolean column named "is_read".
+      if (!("is_read" in message)) {
+        $("markReadBtn").hidden = true;
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from(MESSAGE_TABLE)
+        .update({ is_read: true })
+        .eq("id", message.id);
+
+      if (error) {
+        console.error("Could not mark message as read:", error);
+        showToast("Could not update read status. Check your table policy.", true);
+        return;
+      }
+
+      message.is_read = true;
+      renderDashboard();
+      $("markReadBtn").hidden = true;
+      showToast("Message marked as read.");
+    }
+
+    async function deleteMessage(id) {
+      const message = messages.find((item) => String(item.id) === String(id));
+      if (!message) return;
+
+      const confirmed = window.confirm(
+        `Delete the message from ${customerName(message)}? This cannot be undone.`
+      );
+      if (!confirmed) return;
+
+      const { error } = await supabaseClient
+        .from(MESSAGE_TABLE)
+        .delete()
+        .eq("id", message.id);
+
+      if (error) {
+        console.error("Delete failed:", error);
+        showToast("Could not delete message. Check your Supabase permissions.", true);
+        return;
+      }
+
+      messages = messages.filter((item) => String(item.id) !== String(id));
+      renderDashboard();
+      showToast("Message deleted.");
+    }
+
+    // =========================================================
+    // EVENT LISTENERS
+    // =========================================================
+    $("messagesBody").addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+
+      const { action, id } = button.dataset;
+
+      if (action === "view") await viewMessage(id);
+      if (action === "delete") await deleteMessage(id);
+    });
+
+    $("searchInput").addEventListener("input", renderMessages);
+
+    $("refreshBtn").addEventListener("click", async () => {
+      $("refreshBtn").disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error || !data.session) {
+          window.location.replace("login.html");
+          return;
+        }
+
+        await loadMessages();
+        showToast("Dashboard refreshed.");
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
+    });
+
+    $("allMessagesBtn").addEventListener("click", () => {
+      showAllMessages = !showAllMessages;
+      $("allMessagesBtn").textContent = showAllMessages ? "Show recent" : "View all";
+      renderMessages();
+      $("messagesCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      const button = $("logoutBtn");
+      button.disabled = true;
+
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        console.error("Sign out failed:", error);
+        showToast("Unable to sign out. Please try again.", true);
+        button.disabled = false;
+        return;
+      }
+
+      window.location.replace("login.html");
+    });
+
+    $("menuBtn").addEventListener("click", () => {
+      $("sidebar").classList.toggle("open");
+    });
+
+    document.querySelectorAll(".nav-item[data-section]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".nav-item[data-section]").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        button.classList.add("active");
+        const section = button.dataset.section;
+
+        if (section === "overview") {
+          $("overviewSection").scrollIntoView({ behavior: "smooth" });
+        } else if (section === "messages") {
+          $("messagesCard").scrollIntoView({ behavior: "smooth" });
+        } else if (section === "activity") {
+          $("activitySection").scrollIntoView({ behavior: "smooth" });
+        }
+
+        $("sidebar").classList.remove("open");
+      });
+    });
+
+    $("closeModal").addEventListener("click", () => {
+      $("messageModal").classList.remove("show");
+    });
+
+    $("closeModalBtn").addEventListener("click", () => {
+      $("messageModal").classList.remove("show");
+    });
+
+    $("messageModal").addEventListener("click", (event) => {
+      if (event.target === $("messageModal")) {
+        $("messageModal").classList.remove("show");
+      }
+    });
+
+    $("markReadBtn").addEventListener("click", async () => {
+      if (selectedMessage) await markMessageRead(selectedMessage);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        $("messageModal").classList.remove("show");
+      }
+    });
+
+    // =========================================================
+    // STARTUP
+    // =========================================================
+    async function init() {
+      $("year").textContent = new Date().getFullYear();
+
+      if (window.lucide) lucide.createIcons();
+
+      try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) return;
+
+        await loadMessages();
+      } catch (error) {
+        console.error("Dashboard initialization failed:", error);
+        showToast("An error occurred while loading the dashboard.", true);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
