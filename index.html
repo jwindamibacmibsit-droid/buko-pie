@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#fff8e9">
+  <meta name="theme-color" content="#26733a">
   <meta name="description" content="Discover Nonie's Food Products and enjoy delicious Filipino pie favorites made for sharing.">
   <title>Nonie's Food Products</title>
 
@@ -12,6 +12,144 @@
   <link rel="preconnect" href="https://ozzaojmvymvizyndrmkr.supabase.co">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="index.css">
+
+  <style>
+    /* Dynamic product display */
+    .products-status {
+      padding: 30px 16px;
+      margin-top: 20px;
+      color: var(--muted, #766b5c);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .products-status h3 {
+      margin-bottom: 8px;
+      color: var(--dark, #2d241b);
+    }
+
+    .products-status[hidden] {
+      display: none !important;
+    }
+
+    .products-error {
+      color: #991b15;
+      background: #fff1f0;
+      border: 1px solid #f2c6c3;
+      border-radius: 12px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+      gap: 24px;
+    }
+
+    .product-card {
+      min-width: 0;
+      overflow: hidden;
+      background: white;
+      border: 1px solid #eee1cb;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px #45270f12;
+      transition: transform .25s, box-shadow .25s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 32px #45270f1c;
+    }
+
+    .product-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #fff8e9;
+    }
+
+    .product-info {
+      padding: 20px;
+    }
+
+    .product-info small {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: #26733a;
+      font-weight: 700;
+    }
+
+    .product-info h3 {
+      margin-bottom: 10px;
+      color: #2d241b;
+      overflow-wrap: anywhere;
+    }
+
+    .product-info p {
+      margin-bottom: 14px;
+      color: #766b5c;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .product-price {
+      margin-bottom: 10px;
+      color: #c9251c;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .product-stock {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: #eaf6ec;
+      color: #26733a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .product-info a {
+      display: inline-block;
+      color: #26733a;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .product-info a:hover {
+      color: #c9251c;
+    }
+
+    .feedback-status {
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .feedback-status.error {
+      color: #991b15;
+    }
+
+    .feedback-status.success {
+      color: #174e29;
+    }
+
+    .feedback-submit:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    @media (max-width: 600px) {
+      .products {
+        grid-template-columns: 1fr;
+      }
+
+      .product-info {
+        padding: 16px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -48,7 +186,12 @@
       <div class="hero-inner">
         <div>
           <span class="eyebrow">Filipino favorites</span>
-          <h1>A taste of home, wrapped in <span>every slice.</span></h1>
+
+          <h1>
+            A taste of home, wrapped in
+            <span>every slice.</span>
+          </h1>
+
           <p>
             Discover Nonie's Food Products and share comforting
             Filipino pie favorites with your family and friends.
@@ -70,74 +213,45 @@
       </div>
     </section>
 
-    <!-- PRODUCTS -->
+    <!-- PRODUCTS LOADED FROM SUPABASE -->
     <section class="section" id="products">
       <div class="container">
         <div class="section-heading">
           <span class="eyebrow">Find your favorite</span>
-          <h2>Our Delicious Pie Collection</h2>
+          <h2>Our Delicious Pie & Juice Collection</h2>
           <p>
-            Choose your favorite Nonie's pie and make your
-            next merienda extra special.
+            Explore our available pies, check their prices,
+            and find your next favorite treat.
           </p>
         </div>
 
-        <div class="products">
-          <article class="product-card">
-            <img
-              src="images/494151310_993917556278848_5709840482501904508_n.jpg"
-              alt="Regular Buko Pie"
-              loading="lazy"
-            >
-            <div class="product-info">
-              <small>The classic</small>
-              <h3>Regular Buko Pie</h3>
-              <p>A classic Filipino favorite with a golden crust and coconut filling.</p>
-              <a href="#contact">Ask about this pie →</a>
-            </div>
-          </article>
+        <div
+          id="productsLoading"
+          class="products-status"
+          role="status"
+          aria-live="polite"
+        >
+          Loading available products...
+        </div>
 
-          <article class="product-card">
-            <img
-              src="images/494179968_993917576278846_645281527634883479_n.jpg"
-              alt="Special Buko Pie"
-              loading="lazy"
-            >
-            <div class="product-info">
-              <small>A special treat</small>
-              <h3>Special Buko Pie</h3>
-              <p>A delicious treat to share during family gatherings and celebrations.</p>
-              <a href="#contact">Ask about this pie →</a>
-            </div>
-          </article>
+        <div
+          id="productsContainer"
+          class="products"
+          aria-live="polite"
+        ></div>
 
-          <article class="product-card">
-            <img
-              src="images/494008580_993917592945511_4789299188335684993_n.jpg"
-              alt="Ube Buko Pie"
-              loading="lazy"
-            >
-            <div class="product-info">
-              <small>Ube lovers</small>
-              <h3>Ube Buko Pie</h3>
-              <p>A colorful ube-inspired variety for those who love a different flavor.</p>
-              <a href="#contact">Ask about this pie →</a>
-            </div>
-          </article>
+        <div id="productsEmpty" class="products-status" hidden>
+          <h3>No products available right now</h3>
+          <p>Please check back later for our delicious pies.</p>
+        </div>
 
-          <article class="product-card">
-            <img
-              src="images/494147847_993917612945509_3629212905898700625_n.jpg"
-              alt="Buko Pinya Pie"
-              loading="lazy"
-            >
-            <div class="product-info">
-              <small>Fruity favorite</small>
-              <h3>Buko Pinya Pie</h3>
-              <p>A tropical-inspired pie with a fruity twist.</p>
-              <a href="#contact">Ask about this pie →</a>
-            </div>
-          </article>
+        <div
+          id="productsError"
+          class="products-status products-error"
+          role="alert"
+          hidden
+        >
+          Unable to load our products. Please refresh the page and try again.
         </div>
       </div>
     </section>
@@ -154,15 +268,18 @@
         <div>
           <span class="eyebrow">The Nonie's feeling</span>
           <h2>Made for sharing life's sweetest moments.</h2>
+
           <p>
             Some of the best memories happen around food:
             a visit with family, a shared merienda, or a treat
             brought home just because.
           </p>
+
           <p>
             Nonie's Food Products celebrates those moments
             with Filipino pie favorites that bring people together.
           </p>
+
           <a href="#contact" class="btn">Get in Touch →</a>
         </div>
       </div>
@@ -174,6 +291,7 @@
         <div class="section-heading">
           <span class="eyebrow">We value your thoughts</span>
           <h2>Share Your Feedback</h2>
+
           <p>
             Have you tried Nonie's pies? Tell us about your experience.
             Your feedback helps us make every slice better!
@@ -267,12 +385,13 @@
       <div class="container">
         <span class="eyebrow">Ready for a treat?</span>
         <h2>Let's make your next merienda special.</h2>
+
         <p>
           Contact us to ask about prices, available flavors,
           and how to order.
         </p>
 
-        <!-- Replace this with your actual business email. -->
+        <!-- Replace with your actual business email. -->
         <a href="mailto:YOUR_EMAIL@example.com" class="btn">
           Contact Nonie's →
         </a>
@@ -287,31 +406,218 @@
       alt="Nonie's logo"
       loading="lazy"
     >
+
     <p><strong>Nonie's Food Products</strong></p>
     <p>A taste of home, made for sharing.</p>
+
     <p style="margin-top: 12px; font-size: 13px;">
       &copy; <span id="year"></span> Nonie's Food Products
     </p>
   </footer>
 
   <script>
-    // Automatic copyright year
+    // =====================================================
+    // GENERAL SETUP
+    // =====================================================
     document.getElementById("year").textContent =
       new Date().getFullYear();
 
-    // Supabase configuration
+    const SUPABASE_URL =
+      "https://ozzaojmvymvizyndrmkr.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_6iMwqiQciIxVmwyRAvwuWA_FGKEIG-x";
+
     const supabaseClient = window.supabase.createClient(
-      "https://ozzaojmvymvizyndrmkr.supabase.co",
-      "sb_publishable_6iMwqiQciIxVmwyRAvwuWA_FGKEIG-x"
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
     );
 
-    const feedbackForm = document.getElementById("feedbackForm");
-    const feedbackStatus = document.getElementById("feedbackStatus");
-    const feedbackSubmit = document.getElementById("feedbackSubmit");
+    // =====================================================
+    // PRODUCT ELEMENTS
+    // =====================================================
+    const productsContainer =
+      document.getElementById("productsContainer");
 
-    function showFeedbackStatus(message, type) {
-      feedbackStatus.textContent = message;
-      feedbackStatus.className = "feedback-status " + type;
+    const productsLoading =
+      document.getElementById("productsLoading");
+
+    const productsEmpty =
+      document.getElementById("productsEmpty");
+
+    const productsError =
+      document.getElementById("productsError");
+
+    // =====================================================
+    // PRODUCT HELPERS
+    // =====================================================
+    function formatPrice(price) {
+      const amount = Number(price);
+
+      if (!Number.isFinite(amount)) {
+        return "Price unavailable";
+      }
+
+      return new Intl.NumberFormat("en-PH", {
+        style: "currency",
+        currency: "PHP"
+      }).format(amount);
+    }
+
+    function createProductElement(product) {
+      const article = document.createElement("article");
+      article.className = "product-card";
+
+      // Image
+      const image = document.createElement("img");
+
+      image.alt = product.name
+        ? `${product.name} from Nonie's Food Products`
+        : "Nonie's Food Products item";
+
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      const imageUrl = typeof product.image_url === "string"
+        ? product.image_url.trim()
+        : "";
+
+      if (imageUrl) {
+        try {
+          const parsedUrl = new URL(imageUrl, window.location.href);
+
+          if (
+            parsedUrl.protocol === "https:" ||
+            parsedUrl.protocol === "http:"
+          ) {
+            image.src = parsedUrl.href;
+          } else {
+            image.hidden = true;
+          }
+        } catch {
+          image.hidden = true;
+        }
+      } else {
+        image.hidden = true;
+      }
+
+      image.addEventListener("error", () => {
+        image.hidden = true;
+      });
+
+      // Product information
+      const info = document.createElement("div");
+      info.className = "product-info";
+
+      const category = document.createElement("small");
+      category.textContent = "Nonie's favorite";
+
+      const title = document.createElement("h3");
+      title.textContent = product.name || "Unnamed product";
+
+      const description = document.createElement("p");
+      description.textContent =
+        product.description || "A delicious treat made for sharing.";
+
+      const price = document.createElement("div");
+      price.className = "product-price";
+      price.textContent = formatPrice(product.price);
+
+      const stock = document.createElement("span");
+      stock.className = "product-stock";
+
+      const stockAmount = Number(product.stock);
+
+      stock.textContent = Number.isFinite(stockAmount)
+        ? `${stockAmount} ${stockAmount === 1 ? "item" : "items"} available`
+        : "Available now";
+
+      const orderLink = document.createElement("a");
+      orderLink.href = "#contact";
+      orderLink.textContent = "Ask about this product →";
+      orderLink.setAttribute(
+        "aria-label",
+        `Ask about ${product.name || "this product"}`
+      );
+
+      info.append(
+        category,
+        title,
+        description,
+        price,
+        stock,
+        orderLink
+      );
+
+      article.append(image, info);
+
+      return article;
+    }
+
+    // =====================================================
+    // LOAD AVAILABLE PRODUCTS FROM SUPABASE
+    // =====================================================
+    async function loadProducts() {
+      productsLoading.hidden = false;
+      productsEmpty.hidden = true;
+      productsError.hidden = true;
+      productsContainer.replaceChildren();
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select(
+            "id, name, description, price, image_url, stock, is_available, created_at"
+          )
+          .eq("is_available", true)
+          .gt("stock", 0)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Could not load products:", error);
+          throw error;
+        }
+
+        productsLoading.hidden = true;
+
+        if (!data || data.length === 0) {
+          productsEmpty.hidden = false;
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        data.forEach((product) => {
+          fragment.appendChild(createProductElement(product));
+        });
+
+        productsContainer.appendChild(fragment);
+      } catch (error) {
+        console.error("Product loading error:", error);
+
+        productsLoading.hidden = true;
+        productsError.hidden = false;
+      }
+    }
+
+    // Initial product load
+    loadProducts();
+
+    // =====================================================
+    // CUSTOMER FEEDBACK FORM
+    // =====================================================
+    const feedbackForm =
+      document.getElementById("feedbackForm");
+
+    const feedbackStatus =
+      document.getElementById("feedbackStatus");
+
+    const feedbackSubmit =
+      document.getElementById("feedbackSubmit");
+
+    function showFeedbackStatus(text, type) {
+      feedbackStatus.textContent = text;
+      feedbackStatus.className = `feedback-status ${type}`;
     }
 
     feedbackForm.addEventListener("submit", async function (event) {
@@ -325,7 +631,7 @@
         .getElementById("feedbackEmail")
         .value.trim();
 
-      const message = document
+      const feedbackMessage = document
         .getElementById("feedbackMessage")
         .value.trim();
 
@@ -333,7 +639,7 @@
         'input[name="rating"]:checked'
       );
 
-      if (!name || !message || !ratingInput) {
+      if (!name || !feedbackMessage || !ratingInput) {
         showFeedbackStatus(
           "Please enter your name, select a star rating, and write your feedback.",
           "error"
@@ -343,7 +649,7 @@
 
       if (
         name.length > 100 ||
-        message.length > 2000 ||
+        feedbackMessage.length > 2000 ||
         email.length > 254
       ) {
         showFeedbackStatus(
@@ -355,21 +661,22 @@
 
       feedbackSubmit.disabled = true;
       feedbackSubmit.textContent = "Submitting...";
-      feedbackStatus.className = "feedback-status";
       feedbackStatus.textContent = "";
+      feedbackStatus.className = "feedback-status";
 
       try {
         const { error } = await supabaseClient
           .from("feedback")
           .insert([{
-            name: name,
+            name,
             email: email || null,
             rating: Number(ratingInput.value),
-            message: message
+            message: feedbackMessage
           }]);
 
         if (error) {
           console.error("Supabase feedback error:", error);
+
           throw new Error(
             "We couldn't submit your feedback. Please try again."
           );
