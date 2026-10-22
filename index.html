@@ -4,375 +4,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff8e9">
+  <meta name="description" content="Discover Nonie's Food Products and enjoy delicious Filipino pie favorites made for sharing.">
   <title>Nonie's Food Products</title>
-  <link rel="icon" href="images/193915641_947003332540875_9141155702495262180_n.jpg" type="image/x-icon">
-  <style>
-    :root {
-      --red: #c9251c;
-      --green: #26733a;
-      --gold: #f7cc42;
-      --cream: #fff8e9;
-      --dark: #2d241b;
-    }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: Arial, sans-serif;
-      color: var(--dark);
-      background: var(--cream);
-      line-height: 1.6;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .announcement {
-      background: var(--green);
-      color: white;
-      text-align: center;
-      padding: 9px;
-      font-size: 14px;
-    }
-
-    header {
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 2px 10px #00000012;
-    }
-
-    nav {
-      max-width: 1150px;
-      margin: auto;
-      padding: 14px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--red);
-      font-weight: bold;
-      font-size: 20px;
-    }
-
-    .brand img {
-      width: 55px;
-      height: 55px;
-      object-fit: contain;
-      border-radius: 50%;
-    }
-
-    .brand small {
-      display: block;
-      color: var(--green);
-      font-size: 11px;
-      letter-spacing: 2px;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .nav-links a:hover { color: var(--red); }
-
-    .btn {
-      display: inline-block;
-      background: var(--red);
-      color: white;
-      padding: 12px 23px;
-      border-radius: 30px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: .2s;
-    }
-
-    .btn:hover {
-      background: #991b15;
-      transform: translateY(-2px);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--green);
-      color: var(--green);
-    }
-
-    .btn-outline:hover {
-      background: var(--green);
-      color: white;
-    }
-
-    .hero {
-      background:
-        linear-gradient(110deg, #fff0c9f2, #fff8e9e8),
-        url("images/pineapple.jpg") center/cover;
-      padding: 75px 24px;
-    }
-
-    .hero-inner {
-      max-width: 1150px;
-      margin: auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      gap: 50px;
-    }
-
-    .eyebrow {
-      display: inline-block;
-      color: var(--green);
-      background: #26733a16;
-      border-radius: 30px;
-      padding: 7px 14px;
-      font-weight: bold;
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    h1, h2, h3 {
-      font-family: Georgia, "Times New Roman", serif;
-    }
-
-    h1 {
-      font-size: clamp(42px, 5.5vw, 70px);
-      line-height: 1.05;
-      margin: 22px 0;
-    }
-
-    h1 span { color: var(--red); }
-
-    .hero p {
-      max-width: 510px;
-      color: #6c5b49;
-      margin-bottom: 26px;
-      font-size: 17px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .hero-image {
-      width: 100%;
-      max-width: 440px;
-      justify-self: center;
-      border: 8px solid white;
-      border-radius: 24px;
-      box-shadow: 0 22px 50px #45270f40;
-      transform: rotate(3deg);
-    }
-
-    section { scroll-margin-top: 90px; }
-
-    .section {
-      padding: 75px 24px;
-    }
-
-    .container {
-      max-width: 1150px;
-      margin: auto;
-    }
-
-    .section-heading {
-      max-width: 650px;
-      margin: 0 auto 38px;
-      text-align: center;
-    }
-
-    .section-heading h2 {
-      font-size: clamp(30px, 4vw, 44px);
-      margin: 12px 0;
-    }
-
-    .section-heading p { color: #766b5c; }
-
-    .products {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-
-    .product-card {
-      background: white;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid #eee1cb;
-      box-shadow: 0 8px 25px #45270f0c;
-      transition: .25s;
-    }
-
-    .product-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 15px 35px #45270f20;
-    }
-
-    .product-card img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-    }
-
-    .product-info { padding: 20px; }
-
-    .product-info small {
-      color: var(--green);
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .product-info h3 {
-      font-size: 22px;
-      margin: 8px 0;
-    }
-
-    .product-info p {
-      color: #766b5c;
-      font-size: 14px;
-      margin-bottom: 15px;
-    }
-
-    .product-info a {
-      color: var(--red);
-      font-weight: bold;
-    }
-
-    .story {
-      background: #174e29;
-      color: white;
-    }
-
-    .story-inner {
-      max-width: 1050px;
-      margin: auto;
-      display: grid;
-      grid-template-columns: .8fr 1.2fr;
-      align-items: center;
-      gap: 60px;
-    }
-
-    .story img {
-      width: 100%;
-      max-width: 330px;
-      justify-self: center;
-      border-radius: 50%;
-      background: white;
-      padding: 8px;
-    }
-
-    .story h2 {
-      font-size: clamp(32px, 4vw, 45px);
-      margin: 12px 0 20px;
-    }
-
-    .story p {
-      color: #ffffffc9;
-      margin-bottom: 18px;
-    }
-
-    .story .eyebrow {
-      color: var(--gold);
-      background: #ffffff15;
-    }
-
-    .contact {
-      background: #fff0c9;
-      text-align: center;
-    }
-
-    .contact h2 {
-      font-size: clamp(30px, 4vw, 43px);
-      margin: 12px 0;
-    }
-
-    .contact p {
-      color: #766b5c;
-      margin-bottom: 25px;
-    }
-
-    footer {
-      background: #241b14;
-      color: #ffffffc9;
-      padding: 30px 24px;
-      text-align: center;
-    }
-
-    footer img {
-      width: 55px;
-      height: 55px;
-      object-fit: contain;
-      background: white;
-      border-radius: 50%;
-      margin: 0 auto 10px;
-    }
-
-    @media (max-width: 900px) {
-      .products { grid-template-columns: repeat(2, 1fr); }
-      .hero-inner { gap: 25px; }
-      .nav-links { gap: 12px; }
-    }
-
-    @media (max-width: 650px) {
-      nav { flex-wrap: wrap; }
-      .nav-links {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        font-size: 14px;
-      }
-
-      .hero { padding: 50px 20px; }
-      .hero-inner, .story-inner {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-
-      .hero p { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
-      .hero-image { max-width: 330px; margin-top: 20px; }
-      .story-inner { gap: 30px; }
-      .story img { max-width: 220px; }
-      .section { padding: 55px 20px; }
-    }
-
-    @media (max-width: 400px) {
-      .products { grid-template-columns: 1fr; }
-      .brand { font-size: 17px; }
-    }
-  </style>
+  <link rel="icon" href="images/193915641_947003332540875_9141155702495262180_n.jpg" type="image/jpeg">
+  <link rel="preconnect" href="https://ozzaojmvymvizyndrmkr.supabase.co">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="index.css">
 </head>
-<body>
 
+<body>
   <div class="announcement">
     A little taste of home, made for sharing!
   </div>
 
   <header>
-    <nav>
+    <nav aria-label="Main navigation">
       <a class="brand" href="#home">
-        <img src="images/193915641_947003332540875_9141155702495262180_n.jpg" alt="Nonie's logo">
+        <img
+          src="images/193915641_947003332540875_9141155702495262180_n.jpg"
+          alt="Nonie's logo"
+        >
         <span>
           NONIE'S
           <small>FOOD PRODUCTS</small>
@@ -383,12 +36,14 @@
         <a href="#home">Home</a>
         <a href="#products">Our Pies</a>
         <a href="#story">Our Story</a>
+        <a href="#feedback">Feedback</a>
         <a href="#contact">Contact</a>
       </div>
     </nav>
   </header>
 
   <main>
+    <!-- HERO -->
     <section class="hero" id="home">
       <div class="hero-inner">
         <div>
@@ -406,12 +61,16 @@
           </div>
         </div>
 
-        <img class="hero-image"
-             src="images/494147847_993917612945509_3629212905898700625_n.jpg"
-             alt="Nonie's Buko Pinyang Pie">
+        <img
+          class="hero-image"
+          src="images/494147847_993917612945509_3629212905898700625_n.jpg"
+          alt="Nonie's Buko Pinyang Pie"
+          fetchpriority="high"
+        >
       </div>
     </section>
 
+    <!-- PRODUCTS -->
     <section class="section" id="products">
       <div class="container">
         <div class="section-heading">
@@ -425,7 +84,11 @@
 
         <div class="products">
           <article class="product-card">
-            <img src="images/494151310_993917556278848_5709840482501904508_n.jpg" alt="Regular Buko Pie">
+            <img
+              src="images/494151310_993917556278848_5709840482501904508_n.jpg"
+              alt="Regular Buko Pie"
+              loading="lazy"
+            >
             <div class="product-info">
               <small>The classic</small>
               <h3>Regular Buko Pie</h3>
@@ -435,7 +98,11 @@
           </article>
 
           <article class="product-card">
-            <img src="images/494179968_993917576278846_645281527634883479_n.jpg" alt="Special Buko Pie">
+            <img
+              src="images/494179968_993917576278846_645281527634883479_n.jpg"
+              alt="Special Buko Pie"
+              loading="lazy"
+            >
             <div class="product-info">
               <small>A special treat</small>
               <h3>Special Buko Pie</h3>
@@ -445,7 +112,11 @@
           </article>
 
           <article class="product-card">
-            <img src="images/494008580_993917592945511_4789299188335684993_n.jpg" alt="Ube Buko Pie">
+            <img
+              src="images/494008580_993917592945511_4789299188335684993_n.jpg"
+              alt="Ube Buko Pie"
+              loading="lazy"
+            >
             <div class="product-info">
               <small>Ube lovers</small>
               <h3>Ube Buko Pie</h3>
@@ -455,7 +126,11 @@
           </article>
 
           <article class="product-card">
-            <img src="images/494147847_993917612945509_3629212905898700625_n.jpg" alt="Buko Pinyang Pie">
+            <img
+              src="images/494147847_993917612945509_3629212905898700625_n.jpg"
+              alt="Buko Pinya Pie"
+              loading="lazy"
+            >
             <div class="product-info">
               <small>Fruity favorite</small>
               <h3>Buko Pinya Pie</h3>
@@ -467,9 +142,14 @@
       </div>
     </section>
 
+    <!-- OUR STORY -->
     <section class="section story" id="story">
       <div class="story-inner">
-        <img src="images/193915641_947003332540875_9141155702495262180_n.jpg" alt="Nonie's Food Products logo">
+        <img
+          src="images/193915641_947003332540875_9141155702495262180_n.jpg"
+          alt="Nonie's Food Products logo"
+          loading="lazy"
+        >
 
         <div>
           <span class="eyebrow">The Nonie's feeling</span>
@@ -488,6 +168,101 @@
       </div>
     </section>
 
+    <!-- CUSTOMER FEEDBACK -->
+    <section class="section feedback" id="feedback">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">We value your thoughts</span>
+          <h2>Share Your Feedback</h2>
+          <p>
+            Have you tried Nonie's pies? Tell us about your experience.
+            Your feedback helps us make every slice better!
+          </p>
+        </div>
+
+        <div class="feedback-wrapper">
+          <form class="feedback-form" id="feedbackForm">
+            <div class="form-group">
+              <label for="feedbackName">Your Name *</label>
+              <input
+                type="text"
+                id="feedbackName"
+                name="name"
+                placeholder="Enter your name"
+                maxlength="100"
+                autocomplete="name"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="feedbackEmail">Email Address (optional)</label>
+              <input
+                type="email"
+                id="feedbackEmail"
+                name="email"
+                placeholder="you@example.com"
+                maxlength="254"
+                autocomplete="email"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>How would you rate our pies? *</label>
+
+              <div class="rating-options" aria-label="Choose a star rating">
+                <input type="radio" id="rating5" name="rating" value="5" required>
+                <label for="rating5" title="5 stars" aria-label="5 stars">★</label>
+
+                <input type="radio" id="rating4" name="rating" value="4">
+                <label for="rating4" title="4 stars" aria-label="4 stars">★</label>
+
+                <input type="radio" id="rating3" name="rating" value="3">
+                <label for="rating3" title="3 stars" aria-label="3 stars">★</label>
+
+                <input type="radio" id="rating2" name="rating" value="2">
+                <label for="rating2" title="2 stars" aria-label="2 stars">★</label>
+
+                <input type="radio" id="rating1" name="rating" value="1">
+                <label for="rating1" title="1 star" aria-label="1 star">★</label>
+              </div>
+
+              <span class="rating-hint">
+                1 star = Needs improvement · 5 stars = Excellent
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="feedbackMessage">Your Feedback *</label>
+              <textarea
+                id="feedbackMessage"
+                name="message"
+                placeholder="Tell us what you loved or what we can improve..."
+                maxlength="2000"
+                required
+              ></textarea>
+            </div>
+
+            <div
+              class="feedback-status"
+              id="feedbackStatus"
+              role="status"
+              aria-live="polite"
+            ></div>
+
+            <button
+              type="submit"
+              class="btn feedback-submit"
+              id="feedbackSubmit"
+            >
+              Submit Feedback →
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
     <section class="section contact" id="contact">
       <div class="container">
         <span class="eyebrow">Ready for a treat?</span>
@@ -497,7 +272,7 @@
           and how to order.
         </p>
 
-        <!-- Replace this link with your actual Facebook page or contact link -->
+        <!-- Replace this with your actual business email. -->
         <a href="mailto:YOUR_EMAIL@example.com" class="btn">
           Contact Nonie's →
         </a>
@@ -505,8 +280,13 @@
     </section>
   </main>
 
+  <!-- FOOTER -->
   <footer>
-    <img src="images/193915641_947003332540875_9141155702495262180_n.jpg" alt="Nonie's logo">
+    <img
+      src="images/193915641_947003332540875_9141155702495262180_n.jpg"
+      alt="Nonie's logo"
+      loading="lazy"
+    >
     <p><strong>Nonie's Food Products</strong></p>
     <p>A taste of home, made for sharing.</p>
     <p style="margin-top: 12px; font-size: 13px;">
@@ -515,8 +295,105 @@
   </footer>
 
   <script>
+    // Automatic copyright year
     document.getElementById("year").textContent =
       new Date().getFullYear();
+
+    // Supabase configuration
+    const supabaseClient = window.supabase.createClient(
+      "https://ozzaojmvymvizyndrmkr.supabase.co",
+      "sb_publishable_6iMwqiQciIxVmwyRAvwuWA_FGKEIG-x"
+    );
+
+    const feedbackForm = document.getElementById("feedbackForm");
+    const feedbackStatus = document.getElementById("feedbackStatus");
+    const feedbackSubmit = document.getElementById("feedbackSubmit");
+
+    function showFeedbackStatus(message, type) {
+      feedbackStatus.textContent = message;
+      feedbackStatus.className = "feedback-status " + type;
+    }
+
+    feedbackForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const name = document
+        .getElementById("feedbackName")
+        .value.trim();
+
+      const email = document
+        .getElementById("feedbackEmail")
+        .value.trim();
+
+      const message = document
+        .getElementById("feedbackMessage")
+        .value.trim();
+
+      const ratingInput = feedbackForm.querySelector(
+        'input[name="rating"]:checked'
+      );
+
+      if (!name || !message || !ratingInput) {
+        showFeedbackStatus(
+          "Please enter your name, select a star rating, and write your feedback.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        name.length > 100 ||
+        message.length > 2000 ||
+        email.length > 254
+      ) {
+        showFeedbackStatus(
+          "Please check the length of your entries and try again.",
+          "error"
+        );
+        return;
+      }
+
+      feedbackSubmit.disabled = true;
+      feedbackSubmit.textContent = "Submitting...";
+      feedbackStatus.className = "feedback-status";
+      feedbackStatus.textContent = "";
+
+      try {
+        const { error } = await supabaseClient
+          .from("feedback")
+          .insert([{
+            name: name,
+            email: email || null,
+            rating: Number(ratingInput.value),
+            message: message
+          }]);
+
+        if (error) {
+          console.error("Supabase feedback error:", error);
+          throw new Error(
+            "We couldn't submit your feedback. Please try again."
+          );
+        }
+
+        feedbackForm.reset();
+
+        showFeedbackStatus(
+          "Thank you for your feedback! We appreciate your support. ❤️",
+          "success"
+        );
+      } catch (error) {
+        console.error("Feedback submission error:", error);
+
+        showFeedbackStatus(
+          error.message ||
+            "Something went wrong. Please try again later.",
+          "error"
+        );
+      } finally {
+        feedbackSubmit.disabled = false;
+        feedbackSubmit.textContent = "Submit Feedback →";
+      }
+    });
   </script>
 </body>
 </html>
