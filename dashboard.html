@@ -10,565 +10,160 @@
   <link rel="icon" href="images/193915641_947003332540875_9141155702495262180_n.jpg">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="dashboard.css">
 
   <style>
-    :root {
-      --red: #c9251c;
-      --red-dark: #991b15;
-      --green: #26733a;
-      --green-dark: #1d592d;
-      --gold: #f7cc42;
-      --cream: #fff8e9;
-      --dark: #2d241b;
-      --muted: #766b5c;
-      --border: #eee1cb;
-      --white: #fff;
-      --shadow: 0 12px 35px #45270f0d;
+    [hidden] { display: none !important; }
+
+    .feedback-rating {
+      color: #c18b00;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      font-size: 15px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      color: var(--dark);
-      background:
-        radial-gradient(circle at 95% 5%, #f7cc4220, transparent 24%),
-        var(--cream);
+    .feedback-message {
+      max-width: 330px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
     }
 
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-    a { text-decoration: none; color: inherit; }
-
-    .announcement {
-      padding: 8px 16px;
-      background: var(--green);
-      color: white;
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: .3px;
+    .message-customer {
+      min-width: 145px;
     }
 
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      min-height: 76px;
+    .message-actions {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 12px 28px;
-      background: white;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 3px 12px #00000008;
+      gap: 7px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      min-width: 0;
-    }
-
-    .brand img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
-
-    .brand-name {
-      color: var(--red);
-      font-size: 17px;
-      font-weight: 800;
-    }
-
-    .brand small {
-      display: block;
-      margin-top: 2px;
-      color: var(--green);
-      font-size: 10px;
-      letter-spacing: 2px;
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .admin-chip {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 8px 12px;
-      background: var(--cream);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-    }
-
-    .avatar {
-      width: 35px;
-      height: 35px;
+    .feedback-summary {
       display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: var(--green);
-      color: white;
-      font-weight: bold;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }
 
-    .admin-name { font-size: 13px; font-weight: bold; }
-    .admin-role { font-size: 11px; color: var(--muted); }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: 0;
-      border-radius: 24px;
-      padding: 11px 17px;
-      font-size: 13px;
-      font-weight: bold;
-      transition: .2s;
+    .feedback-summary-card {
+      padding: 18px;
+      background: #fff;
+      border: 1px solid #eee1cb;
+      border-radius: 14px;
     }
 
-    .btn-red { color: white; background: var(--red); }
-    .btn-red:hover { background: var(--red-dark); transform: translateY(-1px); }
-    .btn-green { color: white; background: var(--green); }
-    .btn-green:hover { background: var(--green-dark); }
-    .btn-light { color: var(--green); background: #eaf4eb; }
-    .btn-light:hover { background: #dceedd; }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 245px minmax(0, 1fr);
-      min-height: calc(100vh - 105px);
-    }
-
-    .sidebar {
-      padding: 25px 15px;
-      background: white;
-      border-right: 1px solid var(--border);
-    }
-
-    .side-label {
-      padding: 0 13px;
-      margin: 4px 0 13px;
-      color: #a69a88;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-    }
-
-    .nav-item {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 6px;
-      padding: 13px 14px;
-      border: 0;
-      border-radius: 12px;
-      background: transparent;
-      color: #6e6254;
-      text-align: left;
-      font-size: 14px;
-      font-weight: 600;
-      transition: .2s;
-    }
-
-    .nav-item:hover { background: #fff5e4; color: var(--red); }
-
-    .nav-item.active {
-      color: white;
-      background: var(--green);
-      box-shadow: 0 5px 12px #26733a24;
-    }
-
-    .nav-item svg { width: 18px; height: 18px; }
-
-    .sidebar-note {
-      margin: 35px 3px 0;
-      padding: 17px;
-      border: 1px solid #f2d989;
-      border-radius: 16px;
-      background: #fff8dc;
-    }
-
-    .sidebar-note strong {
+    .feedback-summary-card span {
       display: block;
-      margin-bottom: 7px;
       font-size: 13px;
+      color: #766b5c;
     }
 
-    .sidebar-note p {
-      color: #786847;
-      font-size: 12px;
-      line-height: 1.6;
+    .feedback-summary-card strong {
+      display: block;
+      font-size: 25px;
+      margin-top: 5px;
     }
 
-    main { min-width: 0; padding: 30px; }
-
-    .mobile-menu {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .page-heading {
+    .feedback-filters {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 26px;
-    }
-
-    .eyebrow {
-      margin-bottom: 7px;
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.7px;
-      text-transform: uppercase;
-    }
-
-    h1 { font-size: clamp(25px, 3vw, 32px); letter-spacing: -.8px; }
-    .subtitle { margin-top: 7px; color: var(--muted); font-size: 14px; }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 17px;
-      margin-bottom: 26px;
-    }
-
-    .stat-card {
-      position: relative;
-      overflow: hidden;
-      min-width: 0;
-      padding: 21px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .stat-card::after {
-      position: absolute;
-      content: "";
-      right: -22px;
-      bottom: -28px;
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: var(--stat-tint, #f7cc4220);
-    }
-
-    .stat-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       gap: 10px;
     }
 
-    .stat-label { color: var(--muted); font-size: 12px; font-weight: 600; }
-
-    .stat-icon {
-      display: grid;
-      place-items: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      color: var(--stat-color, var(--green));
-      background: var(--stat-tint, #eaf4eb);
-    }
-
-    .stat-icon svg { width: 20px; height: 20px; }
-    .stat-number { margin-top: 16px; font-size: 32px; font-weight: 800; }
-    .stat-foot { margin-top: 5px; color: var(--muted); font-size: 11px; }
-
-    .content-card {
-      overflow: hidden;
-      margin-bottom: 24px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
-      padding: 22px 23px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .card-heading h2 { font-size: 17px; }
-    .card-heading p { margin-top: 5px; color: var(--muted); font-size: 12px; }
-
-    .toolbar {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 9px;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 190px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
+    .feedback-filters select {
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid #e2d5c3;
       border-radius: 10px;
-      background: #fffdf8;
-    }
-
-    .search-box svg { width: 16px; color: var(--muted); }
-    .search-box input {
-      width: 100%;
-      min-width: 0;
-      outline: none;
-      border: 0;
-      background: transparent;
-      color: var(--dark);
-      font-size: 12px;
-    }
-
-    .table-wrap { overflow-x: auto; }
-
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-
-    th {
-      padding: 13px 20px;
-      background: #fffdf8;
-      color: #8c7c68;
-      font-size: 10px;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 16px 20px;
-      border-top: 1px solid #f3eadc;
-      font-size: 12px;
-      vertical-align: middle;
-    }
-
-    tbody tr:hover { background: #fffdf8; }
-    .customer-name { font-weight: 700; font-size: 13px; }
-    .customer-email { display: block; margin-top: 4px; color: var(--muted); }
-    .message-preview { max-width: 330px; line-height: 1.6; overflow-wrap: anywhere; }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 9px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status-unread { color: #9a5610; background: #fff0d6; }
-    .status-read { color: var(--green); background: #e8f5e9; }
-
-    .row-actions { display: flex; align-items: center; gap: 7px; }
-
-    .icon-btn {
-      display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
       background: white;
-      color: var(--green);
+      color: #2d241b;
     }
 
-    .icon-btn:hover { background: #edf6ee; }
-    .icon-btn.delete { color: var(--red); }
-    .icon-btn.delete:hover { background: #fff0ee; }
-    .icon-btn svg { width: 15px; height: 15px; }
-
-    .empty-state, .loading-state {
-      padding: 48px 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .empty-state svg { width: 38px; height: 38px; margin-bottom: 12px; color: var(--green); }
-    .empty-state strong { display: block; margin-bottom: 5px; color: var(--dark); font-size: 15px; }
-
-    .activity-list { padding: 5px 22px; }
-
-    .activity-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 13px;
-      padding: 17px 0;
-      border-bottom: 1px solid #f3eadc;
-    }
-
-    .activity-item:last-child { border-bottom: 0; }
-
-    .activity-icon {
+    .feedback-details {
       display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: #eaf4eb;
-      color: var(--green);
-    }
-
-    .activity-icon svg { width: 18px; }
-    .activity-title { font-size: 13px; font-weight: 700; }
-    .activity-time { margin-top: 4px; color: var(--muted); font-size: 11px; }
-
-    .footer {
-      padding: 12px 0 3px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 11px;
-    }
-
-    .toast {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 100;
-      max-width: min(400px, calc(100vw - 44px));
-      padding: 14px 18px;
-      color: white;
-      background: var(--green-dark);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px #0002;
-      font-size: 13px;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(12px);
-      transition: .25s;
-    }
-
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.error { background: var(--red-dark); }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 80;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: #21170f99;
-    }
-
-    .modal-backdrop.show { display: flex; }
-
-    .modal {
-      width: min(540px, 100%);
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 25px;
-      border-radius: 18px;
-      background: white;
-      box-shadow: 0 20px 80px #0003;
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .modal-head h2 { font-size: 20px; }
-    .modal-close {
-      width: 34px;
-      height: 34px;
-      border: 0;
-      border-radius: 9px;
-      background: #fff3e2;
-      color: var(--dark);
-    }
-
-    .detail-label {
-      margin: 16px 0 5px;
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .8px;
-    }
-
-    .detail-value {
+      gap: 9px;
       overflow-wrap: anywhere;
-      font-size: 13px;
-      line-height: 1.7;
+    }
+
+    .feedback-details .detail-value {
       white-space: pre-wrap;
     }
 
-    @media (max-width: 1150px) {
-      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      main { padding: 24px; }
-      .layout { grid-template-columns: 220px minmax(0, 1fr); }
+    .rating-large {
+      color: #c18b00;
+      font-size: 24px;
+      letter-spacing: 2px;
     }
 
-    @media (max-width: 760px) {
-      .topbar { padding: 11px 16px; min-height: 68px; }
-      .brand img { width: 42px; height: 42px; }
-      .brand-name { font-size: 14px; }
-      .brand small { font-size: 9px; }
-      .admin-chip { padding: 5px; border: 0; background: transparent; }
-      .admin-chip .admin-info { display: none; }
-      .top-actions { gap: 6px; }
-      .top-actions .btn { padding: 10px; font-size: 0; }
-      .top-actions .btn svg { width: 17px; height: 17px; }
-      .layout { display: block; }
-      .sidebar {
-        display: none;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-        padding: 15px;
+    .empty-feedback {
+      text-align: center;
+      padding: 35px 15px;
+      color: #766b5c;
+    }
+
+    .empty-feedback strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #2d241b;
+    }
+
+    .feedback-table-wrap {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .feedback-table-wrap table {
+      width: 100%;
+      min-width: 780px;
+    }
+
+    .feedback-table-wrap td,
+    .feedback-table-wrap th {
+      vertical-align: top;
+    }
+
+    .status-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #991b15;
+      background: #fff0ee;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-reviewed {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #26733a;
+      background: #eaf4eb;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 650px) {
+      .feedback-summary {
+        grid-template-columns: 1fr;
       }
-      .sidebar.open { display: block; }
-      .sidebar-note { display: none; }
-      .mobile-menu { display: flex; }
-      main { padding: 20px 15px; }
-      .stats { gap: 10px; }
-      .stat-card { padding: 16px; border-radius: 14px; }
-      .stat-number { font-size: 27px; }
-      .stat-label { font-size: 11px; }
-      .stat-icon { width: 34px; height: 34px; }
-      .page-heading { margin-bottom: 20px; }
-      .card-heading { padding: 17px; }
-      .toolbar { width: 100%; }
-      .search-box { flex: 1; min-width: 0; }
-      .table-wrap { overflow-x: auto; }
-      table { min-width: 720px; }
-    }
 
-    @media (max-width: 380px) {
-      .stats { grid-template-columns: 1fr; }
-      .page-heading .btn { width: 100%; }
+      .feedback-filters {
+        width: 100%;
+      }
+
+      .feedback-filters select {
+        width: 100%;
+      }
+
+      .feedback-table-wrap table {
+        min-width: 720px;
+      }
     }
   </style>
 </head>
@@ -611,7 +206,12 @@
       </button>
 
       <button class="nav-item" data-section="messages" type="button">
-        <i data-lucide="mail"></i> Customer Messages
+        <i data-lucide="message-square"></i> Customer Feedback
+        <span id="feedbackNavCount" style="margin-left:auto"></span>
+      </button>
+
+      <button class="nav-item" data-section="products" type="button">
+        <i data-lucide="package"></i> Products
       </button>
 
       <button class="nav-item" data-section="activity" type="button">
@@ -626,7 +226,7 @@
 
       <div class="sidebar-note">
         <strong>Fresh from Nonie's kitchen!</strong>
-        <p>Manage customer inquiries and keep track of messages sent through your website.</p>
+        <p>Manage products and customer feedback in one place.</p>
       </div>
     </aside>
 
@@ -637,6 +237,7 @@
         </button>
       </div>
 
+      <!-- OVERVIEW -->
       <section id="overviewSection">
         <div class="page-heading">
           <div>
@@ -653,29 +254,29 @@
         <div class="stats">
           <article class="stat-card" style="--stat-color:var(--green);--stat-tint:#eaf4eb">
             <div class="stat-top">
-              <span class="stat-label">Total Messages</span>
-              <span class="stat-icon"><i data-lucide="mail"></i></span>
+              <span class="stat-label">Total Feedback</span>
+              <span class="stat-icon"><i data-lucide="message-square"></i></span>
             </div>
-            <div class="stat-number" id="totalMessages">—</div>
-            <div class="stat-foot">All customer inquiries</div>
+            <div class="stat-number" id="totalMessages">0</div>
+            <div class="stat-foot">Customer feedback submissions</div>
           </article>
 
           <article class="stat-card" style="--stat-color:var(--red);--stat-tint:#fff0ee">
             <div class="stat-top">
-              <span class="stat-label">Unread Messages</span>
+              <span class="stat-label">New Feedback</span>
               <span class="stat-icon"><i data-lucide="mail-open"></i></span>
             </div>
-            <div class="stat-number" id="unreadMessages">—</div>
-            <div class="stat-foot">Messages needing attention</div>
+            <div class="stat-number" id="unreadMessages">0</div>
+            <div class="stat-foot">Feedback not yet reviewed</div>
           </article>
 
           <article class="stat-card" style="--stat-color:#ad7900;--stat-tint:#fff6d9">
             <div class="stat-top">
-              <span class="stat-label">Today's Messages</span>
-              <span class="stat-icon"><i data-lucide="calendar-days"></i></span>
+              <span class="stat-label">Products</span>
+              <span class="stat-icon"><i data-lucide="package"></i></span>
             </div>
-            <div class="stat-number" id="todayMessages">—</div>
-            <div class="stat-foot">Received today</div>
+            <div class="stat-number" id="overviewProducts">0</div>
+            <div class="stat-foot">Products in your inventory</div>
           </article>
 
           <article class="stat-card" style="--stat-color:var(--green);--stat-tint:#eaf4eb">
@@ -691,30 +292,28 @@
         <section class="content-card" id="messagesCard">
           <div class="card-heading">
             <div>
-              <h2>Customer Messages</h2>
-              <p>Read and manage inquiries from your visitors.</p>
+              <h2>Recent Customer Feedback</h2>
+              <p>Review ratings, comments, and customer suggestions.</p>
             </div>
 
             <div class="toolbar">
               <label class="search-box">
                 <i data-lucide="search"></i>
-                <input id="searchInput" type="search" placeholder="Search messages..." aria-label="Search messages">
+                <input id="searchInput" type="search" placeholder="Search feedback..." aria-label="Search feedback">
               </label>
-
-              <button class="btn btn-light" id="allMessagesBtn" type="button">
-                View all
-              </button>
+              <button class="btn btn-light" id="allMessagesBtn" type="button">View all</button>
             </div>
           </div>
 
           <div id="messageStatus" class="loading-state">Checking your admin session...</div>
 
-          <div class="table-wrap" id="tableWrap" hidden>
+          <div class="feedback-table-wrap" id="tableWrap" hidden>
             <table>
               <thead>
                 <tr>
                   <th>Customer</th>
-                  <th>Message</th>
+                  <th>Rating</th>
+                  <th>Feedback</th>
                   <th>Date received</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -726,13 +325,174 @@
         </section>
       </section>
 
-      <section class="content-card" id="activitySection">
+      <!-- FEEDBACK MANAGEMENT -->
+      <section id="messagesSection" hidden>
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Customer experience</div>
+            <h1>Customer Feedback</h1>
+            <p class="subtitle">Read ratings, review comments, and manage customer submissions.</p>
+          </div>
+
+          <button class="btn btn-green" id="refreshFeedbackBtn" type="button">
+            <i data-lucide="refresh-cw"></i> Refresh feedback
+          </button>
+        </div>
+
+        <div class="feedback-summary">
+          <div class="feedback-summary-card">
+            <span>Total submissions</span>
+            <strong id="feedbackTotal">0</strong>
+          </div>
+
+          <div class="feedback-summary-card">
+            <span>Average rating</span>
+            <strong id="feedbackAverage">—</strong>
+          </div>
+
+          <div class="feedback-summary-card">
+            <span>New submissions</span>
+            <strong id="feedbackNew">0</strong>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-heading">
+            <div>
+              <h2>All Customer Feedback</h2>
+              <p>Use search and filters to find specific submissions.</p>
+            </div>
+
+            <div class="toolbar feedback-filters">
+              <label class="search-box">
+                <i data-lucide="search"></i>
+                <input id="feedbackSearch" type="search" placeholder="Search customers..." aria-label="Search customer feedback">
+              </label>
+
+              <select id="ratingFilter" aria-label="Filter by rating">
+                <option value="all">All ratings</option>
+                <option value="5">5 stars</option>
+                <option value="4">4 stars</option>
+                <option value="3">3 stars</option>
+                <option value="2">2 stars</option>
+                <option value="1">1 star</option>
+              </select>
+
+              <select id="statusFilter" aria-label="Filter by review status">
+                <option value="all">All statuses</option>
+                <option value="new">New</option>
+                <option value="reviewed">Reviewed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="feedback-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Feedback</th>
+                  <th>Date received</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allFeedbackBody">
+                <tr><td colspan="6">Loading feedback...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS CRUD -->
+      <section id="productsSection" hidden>
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Inventory management</div>
+            <h1>Product Management</h1>
+            <p class="subtitle">Add, edit, search, and manage your food products.</p>
+          </div>
+
+          <button class="btn btn-red" id="addProductBtn" type="button">
+            <i data-lucide="plus"></i> Add Product
+          </button>
+        </div>
+
+        <div class="stats">
+          <article class="stat-card">
+            <div class="stat-label">Total Products</div>
+            <div class="stat-number" id="productTotal">0</div>
+            <div class="stat-foot">All products in inventory</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Available</div>
+            <div class="stat-number" id="productAvailable">0</div>
+            <div class="stat-foot">Visible to customers</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Out of Stock</div>
+            <div class="stat-number" id="productOutOfStock">0</div>
+            <div class="stat-foot">Products with zero stock</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Inventory Value</div>
+            <div class="stat-number" id="productValue" style="font-size:25px">₱0.00</div>
+            <div class="stat-foot">Price × quantity in stock</div>
+          </article>
+        </div>
+
+        <div class="content-card">
+          <div class="card-heading">
+            <div>
+              <h2>Your Products</h2>
+              <p>Manage product details, prices, stock, and visibility.</p>
+            </div>
+
+            <div class="toolbar">
+              <label class="search-box">
+                <i data-lucide="search"></i>
+                <input id="productSearch" type="search" placeholder="Search products..." aria-label="Search products">
+              </label>
+
+              <button class="btn btn-light" id="refreshProductsBtn" type="button">
+                <i data-lucide="refresh-cw"></i> Refresh
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table style="min-width:850px">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Visibility</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsBody">
+                <tr><td colspan="5">Loading products...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECENT ACTIVITY -->
+      <section class="content-card" id="activitySection" hidden>
         <div class="card-heading">
           <div>
             <h2>Recent Activity</h2>
-            <p>Your latest customer inquiries.</p>
+            <p>Your latest customer feedback and products.</p>
           </div>
         </div>
+
         <div class="activity-list" id="activityList">
           <div class="loading-state">Loading recent activity...</div>
         </div>
@@ -744,21 +504,75 @@
     </main>
   </div>
 
+  <!-- FEEDBACK DETAIL MODAL -->
   <div class="modal-backdrop" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modal-head">
-        <h2 id="modalTitle">Message details</h2>
-        <button class="modal-close" id="closeModal" type="button" aria-label="Close message">
+        <h2 id="modalTitle">Feedback details</h2>
+        <button class="modal-close" id="closeModal" type="button" aria-label="Close feedback">
           <i data-lucide="x"></i>
         </button>
       </div>
-      <div id="messageDetails"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
+
+      <div id="messageDetails" class="feedback-details"></div>
+
+      <div class="form-actions">
         <button class="btn btn-green" id="markReadBtn" type="button">
-          <i data-lucide="check-circle"></i> Mark as read
+          <i data-lucide="check-circle"></i> Mark as reviewed
         </button>
         <button class="btn btn-light" id="closeModalBtn" type="button">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT CREATE/EDIT MODAL -->
+  <div class="modal-backdrop" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="productModalTitle">Add Product</h2>
+        <button class="modal-close" id="closeProductModal" type="button" aria-label="Close product form">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <form id="productForm">
+        <input id="productId" type="hidden">
+
+        <label class="detail-label" for="productName">Product name *</label>
+        <input class="field" id="productName" required maxlength="150" placeholder="e.g. Homemade Banana Chips">
+
+        <label class="detail-label" for="productDescription">Description</label>
+        <textarea class="field" id="productDescription" rows="3" maxlength="3000" placeholder="Describe your product..."></textarea>
+
+        <div class="form-grid">
+          <div>
+            <label class="detail-label" for="productPrice">Price (₱) *</label>
+            <input class="field" id="productPrice" type="number" required min="0" max="99999999.99" step="0.01" placeholder="0.00">
+          </div>
+
+          <div>
+            <label class="detail-label" for="productStock">Stock quantity *</label>
+            <input class="field" id="productStock" type="number" required min="0" step="1" value="0">
+          </div>
+        </div>
+
+        <label class="detail-label" for="productImage">Image URL</label>
+        <input class="field" id="productImage" type="url" maxlength="2048" placeholder="https://example.com/product.jpg">
+
+        <label style="display:flex;align-items:center;gap:10px;margin:18px 0">
+          <input id="productIsAvailable" type="checkbox" checked>
+          <span style="font-size:13px;font-weight:bold">Available to customers</span>
+        </label>
+
+        <p style="font-size:12px;color:var(--muted)">
+          Fields marked * are required. Unavailable products remain in your admin inventory.
+        </p>
+
+        <div class="form-actions">
+          <button class="btn btn-red" id="saveProductBtn" type="submit">Save Product</button>
+          <button class="btn btn-light" id="cancelProductBtn" type="button">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -767,18 +581,14 @@
   <script>
     "use strict";
 
-    // =========================================================
-    // SUPABASE CONFIGURATION
-    // Keep this key publishable/anon only. Never put a service
-    // role key or database password in frontend HTML.
-    // =========================================================
+    // ========================================================
+    // CONFIGURATION
+    // ========================================================
     const SUPABASE_URL = "https://ozzaojmvymvizyndrmkr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_6iMwqiQciIxVmwyRAvwuWA_FGKEIG-x";
 
-    // IMPORTANT:
-    // Change MESSAGE_TABLE and field names below to match your
-    // actual Supabase messages table if necessary.
-    const MESSAGE_TABLE = "messages";
+    // The public website feedback form inserts into this table.
+    const MESSAGE_TABLE = "feedback";
 
     const supabaseClient = window.supabase.createClient(
       SUPABASE_URL,
@@ -787,12 +597,16 @@
 
     let currentAdmin = null;
     let messages = [];
+    let products = [];
     let selectedMessage = null;
     let showAllMessages = false;
     let toastTimer = null;
 
     const $ = (id) => document.getElementById(id);
 
+    // ========================================================
+    // UTILITIES
+    // ========================================================
     function escapeHTML(value) {
       return String(value ?? "").replace(/[&<>"']/g, (char) => ({
         "&": "&amp;",
@@ -805,10 +619,11 @@
 
     function formatDate(value) {
       if (!value) return "Date unavailable";
+
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "Date unavailable";
 
-      return date.toLocaleString(undefined, {
+      return date.toLocaleString("en-PH", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -817,19 +632,22 @@
       });
     }
 
-    function isUnread(message) {
-      // Adapt this to your actual schema if you use a different
-      // status column, e.g. read_at or status = 'read'.
-      if ("is_read" in message) return message.is_read === false;
-      if ("read" in message) return message.read === false;
-      if ("status" in message) {
-        return String(message.status).toLowerCase() === "unread";
-      }
-      return false;
+    function peso(value) {
+      return "₱" + Number(value || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
 
-    function messageText(message) {
-      return message.message ?? message.content ?? message.body ?? "";
+    function safeImageURL(value) {
+      if (!value) return "";
+
+      try {
+        const url = new URL(value);
+        return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+      } catch {
+        return "";
+      }
     }
 
     function customerName(message) {
@@ -837,11 +655,26 @@
     }
 
     function customerEmail(message) {
-      return message.email ?? message.customer_email ?? "No email provided";
+      return message.email ?? message.customer_email ?? "";
+    }
+
+    function messageText(message) {
+      return message.message ?? message.content ?? message.body ?? "";
     }
 
     function messageDate(message) {
       return message.created_at ?? message.sent_at ?? message.date ?? null;
+    }
+
+    // The feedback table uses is_read as its review state.
+    // If the column has not been added, records are treated as new.
+    function isUnread(message) {
+      return message.is_read !== true;
+    }
+
+    function renderStars(rating) {
+      const value = Math.max(0, Math.min(5, Number(rating) || 0));
+      return `<span class="feedback-rating" aria-label="${value} out of 5 stars">${"★".repeat(value)}${"☆".repeat(5 - value)}</span>`;
     }
 
     function showToast(text, isError = false) {
@@ -854,40 +687,22 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
     }
 
-    function setLoading(text) {
-      $("messageStatus").hidden = false;
-      $("messageStatus").textContent = text;
-      $("tableWrap").hidden = true;
+    function refreshIcons() {
+      if (window.lucide) window.lucide.createIcons();
     }
 
-    function setMessageError(error) {
-      $("messageStatus").hidden = false;
-      $("tableWrap").hidden = true;
-
-      const safeError = escapeHTML(error);
-      $("messageStatus").innerHTML = `
-        <div class="empty-state">
-          <i data-lucide="alert-circle"></i>
-          <strong>Unable to load messages</strong>
-          <p>${safeError}</p>
-          <p style="margin-top:10px">Check your Supabase table name, column names, and Row Level Security policies.</p>
-        </div>`;
-      if (window.lucide) lucide.createIcons();
-    }
-
-    // =========================================================
-    // AUTHENTICATION AND ADMIN CHECK
-    // =========================================================
+    // ========================================================
+    // ADMIN AUTHENTICATION
+    // ========================================================
     async function verifyAdmin() {
-      const { data: sessionData, error: sessionError } =
-        await supabaseClient.auth.getSession();
+      const { data, error } = await supabaseClient.auth.getSession();
 
-      if (sessionError || !sessionData.session) {
+      if (error || !data.session) {
         window.location.replace("login.html");
         return false;
       }
 
-      const user = sessionData.session.user;
+      const user = data.session.user;
 
       const { data: admin, error: adminError } = await supabaseClient
         .from("adminlogin")
@@ -895,11 +710,8 @@
         .eq("id", user.id)
         .maybeSingle();
 
-      if (
-        adminError ||
-        !admin ||
-        admin.role !== "admin"
-      ) {
+      if (adminError || !admin || admin.role !== "admin") {
+        console.error("Admin verification failed:", adminError);
         await supabaseClient.auth.signOut();
         window.location.replace("login.html");
         return false;
@@ -907,20 +719,64 @@
 
       currentAdmin = admin;
 
-      const displayName = admin.full_name || admin.email || "Administrator";
-      $("adminName").textContent = displayName;
-      $("avatar").textContent = displayName.trim().charAt(0).toUpperCase();
+      const name = admin.full_name || admin.email || "Administrator";
+      $("adminName").textContent = name;
+      $("avatar").textContent = name.trim().charAt(0).toUpperCase();
 
       return true;
     }
 
-    // =========================================================
-    // LOAD MESSAGES
-    // =========================================================
-    async function loadMessages() {
-      setLoading("Loading customer messages...");
+    // ========================================================
+    // NAVIGATION
+    // ========================================================
+    const sections = {
+      overview: $("overviewSection"),
+      messages: $("messagesSection"),
+      products: $("productsSection"),
+      activity: $("activitySection")
+    };
 
-      // This query expects the table to have created_at.
+    function navigateTo(sectionName) {
+      if (!sections[sectionName]) return;
+
+      Object.values(sections).forEach((section) => {
+        section.hidden = true;
+      });
+
+      sections[sectionName].hidden = false;
+
+      document.querySelectorAll(".nav-item[data-section]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.section === sectionName);
+      });
+
+      $("sidebar").classList.remove("open");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (sectionName === "messages") {
+        renderAllFeedback();
+      }
+
+      refreshIcons();
+    }
+
+    document.querySelectorAll(".nav-item[data-section]").forEach((button) => {
+      button.addEventListener("click", () => {
+        navigateTo(button.dataset.section);
+      });
+    });
+
+    $("menuBtn").addEventListener("click", () => {
+      $("sidebar").classList.toggle("open");
+    });
+
+    // ========================================================
+    // FEEDBACK LOADING AND SUMMARY
+    // ========================================================
+    async function loadMessages() {
+      $("messageStatus").hidden = false;
+      $("messageStatus").textContent = "Loading customer feedback...";
+      $("tableWrap").hidden = true;
+
       const { data, error } = await supabaseClient
         .from(MESSAGE_TABLE)
         .select("*")
@@ -928,169 +784,228 @@
         .limit(500);
 
       if (error) {
-        console.error("Supabase message query failed:", error);
-        setMessageError(
-          error.message +
-          " — The configured table is '" + MESSAGE_TABLE + "'."
-        );
+        console.error("Load feedback failed:", error);
+
+        $("messageStatus").textContent =
+          "Unable to load feedback. Check the feedback table and admin SELECT policy.";
+
+        $("messagesBody").innerHTML = "";
+        $("allFeedbackBody").innerHTML = `
+          <tr><td colspan="6">
+            <div class="empty-feedback">
+              <strong>Unable to load feedback</strong>
+              Check your Supabase table and permissions.
+            </div>
+          </td></tr>`;
+
         return;
       }
 
       messages = data || [];
-      renderDashboard();
-    }
-
-    function renderDashboard() {
-      const unread = messages.filter(isUnread);
-      const today = new Date();
-      const todayCount = messages.filter((message) => {
-        const value = messageDate(message);
-        if (!value) return false;
-        const date = new Date(value);
-
-        return !Number.isNaN(date.getTime()) &&
-          date.getFullYear() === today.getFullYear() &&
-          date.getMonth() === today.getMonth() &&
-          date.getDate() === today.getDate();
-      }).length;
-
-      $("totalMessages").textContent = messages.length.toLocaleString();
-      $("unreadMessages").textContent = unread.length.toLocaleString();
-      $("todayMessages").textContent = todayCount.toLocaleString();
 
       renderMessages();
+      renderAllFeedback();
       renderActivity();
-      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderFeedbackStats() {
+      const unreadCount = messages.filter(isUnread).length;
+
+      $("totalMessages").textContent = messages.length;
+      $("unreadMessages").textContent = unreadCount;
+      $("feedbackNavCount").textContent = unreadCount || "";
+
+      $("feedbackTotal").textContent = messages.length;
+      $("feedbackNew").textContent = unreadCount;
+
+      const ratedMessages = messages.filter((item) =>
+        Number.isFinite(Number(item.rating)) &&
+        Number(item.rating) >= 1 &&
+        Number(item.rating) <= 5
+      );
+
+      if (!ratedMessages.length) {
+        $("feedbackAverage").textContent = "—";
+      } else {
+        const average = ratedMessages.reduce(
+          (sum, item) => sum + Number(item.rating),
+          0
+        ) / ratedMessages.length;
+
+        $("feedbackAverage").textContent = average.toFixed(1) + " ★";
+      }
+    }
+
+    function feedbackRow(message) {
+      const unread = isUnread(message);
+      const email = customerEmail(message);
+      const rating = Number(message.rating) || 0;
+      const content = messageText(message);
+      const id = escapeHTML(message.id);
+
+      return `
+        <tr>
+          <td class="message-customer">
+            <div class="customer-name">${escapeHTML(customerName(message))}</div>
+            <span class="customer-email">${escapeHTML(email || "No email provided")}</span>
+          </td>
+
+          <td>${renderStars(rating)}</td>
+
+          <td>
+            <div class="feedback-message">${escapeHTML(content || "No feedback message")}</div>
+          </td>
+
+          <td>${escapeHTML(formatDate(messageDate(message)))}</td>
+
+          <td>
+            <span class="${unread ? "status-new" : "status-reviewed"}">
+              ${unread ? "● New" : "✓ Reviewed"}
+            </span>
+          </td>
+
+          <td>
+            <div class="message-actions">
+              <button
+                class="icon-btn"
+                type="button"
+                data-message-action="view"
+                data-id="${id}"
+                aria-label="View feedback"
+                title="View feedback"
+              ><i data-lucide="eye"></i></button>
+
+              <button
+                class="icon-btn delete"
+                type="button"
+                data-message-action="delete"
+                data-id="${id}"
+                aria-label="Delete feedback"
+                title="Delete feedback"
+              ><i data-lucide="trash-2"></i></button>
+            </div>
+          </td>
+        </tr>`;
     }
 
     function renderMessages() {
+      renderFeedbackStats();
+
       const query = $("searchInput").value.trim().toLowerCase();
 
-      let filtered = messages.filter((message) => {
-        const combined = [
+      const filtered = messages.filter((message) => {
+        const searchable = [
           customerName(message),
           customerEmail(message),
-          messageText(message)
+          messageText(message),
+          message.rating
         ].join(" ").toLowerCase();
 
-        return combined.includes(query);
+        return searchable.includes(query);
       });
 
-      if (!showAllMessages) filtered = filtered.slice(0, 8);
+      const visible = showAllMessages ? filtered : filtered.slice(0, 8);
 
       $("messageStatus").hidden = true;
       $("tableWrap").hidden = false;
 
-      if (!filtered.length) {
+      if (!visible.length) {
         $("messagesBody").innerHTML = `
           <tr>
-            <td colspan="5">
-              <div class="empty-state">
-                <i data-lucide="inbox"></i>
-                <strong>No messages found</strong>
-                <p>New customer inquiries will appear here.</p>
+            <td colspan="6">
+              <div class="empty-feedback">
+                <strong>No customer feedback found</strong>
+                <p>Feedback submitted through your website will appear here.</p>
               </div>
             </td>
           </tr>`;
-        if (window.lucide) lucide.createIcons();
-        return;
+      } else {
+        $("messagesBody").innerHTML = visible.map(feedbackRow).join("");
       }
 
-      $("messagesBody").innerHTML = filtered.map((message) => {
-        const unread = isUnread(message);
-        const name = escapeHTML(customerName(message));
-        const email = escapeHTML(customerEmail(message));
-        const text = escapeHTML(messageText(message));
-        const date = escapeHTML(formatDate(messageDate(message)));
-        const id = escapeHTML(message.id);
+      refreshIcons();
+    }
 
-        return `
+    function renderAllFeedback() {
+      const query = $("feedbackSearch").value.trim().toLowerCase();
+      const ratingFilter = $("ratingFilter").value;
+      const statusFilter = $("statusFilter").value;
+
+      const filtered = messages.filter((message) => {
+        const searchable = [
+          customerName(message),
+          customerEmail(message),
+          messageText(message),
+          message.rating
+        ].join(" ").toLowerCase();
+
+        const matchesQuery = searchable.includes(query);
+        const matchesRating =
+          ratingFilter === "all" ||
+          Number(message.rating) === Number(ratingFilter);
+
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "new" && isUnread(message)) ||
+          (statusFilter === "reviewed" && !isUnread(message));
+
+        return matchesQuery && matchesRating && matchesStatus;
+      });
+
+      if (!filtered.length) {
+        $("allFeedbackBody").innerHTML = `
           <tr>
-            <td>
-              <div class="customer-name">${name}</div>
-              <span class="customer-email">${email}</span>
-            </td>
-            <td><div class="message-preview">${text || "No message content"}</div></td>
-            <td>${date}</td>
-            <td>
-              <span class="status ${unread ? "status-unread" : "status-read"}">
-                ${unread ? "● Unread" : "✓ Read"}
-              </span>
-            </td>
-            <td>
-              <div class="row-actions">
-                <button class="icon-btn" data-action="view" data-id="${id}"
-                  type="button" aria-label="View message" title="View message">
-                  <i data-lucide="eye"></i>
-                </button>
-                <button class="icon-btn delete" data-action="delete" data-id="${id}"
-                  type="button" aria-label="Delete message" title="Delete message">
-                  <i data-lucide="trash-2"></i>
-                </button>
+            <td colspan="6">
+              <div class="empty-feedback">
+                <strong>No feedback found</strong>
+                <p>Try a different search or filter.</p>
               </div>
             </td>
           </tr>`;
-      }).join("");
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function renderActivity() {
-      const latest = [...messages]
-        .sort((a, b) => new Date(messageDate(b) || 0) - new Date(messageDate(a) || 0))
-        .slice(0, 5);
-
-      if (!latest.length) {
-        $("activityList").innerHTML = `
-          <div class="empty-state">
-            <i data-lucide="activity"></i>
-            <strong>No recent activity</strong>
-            <p>Customer activity will appear here when messages arrive.</p>
-          </div>`;
-        if (window.lucide) lucide.createIcons();
-        return;
+      } else {
+        $("allFeedbackBody").innerHTML = filtered.map(feedbackRow).join("");
       }
 
-      $("activityList").innerHTML = latest.map((message) => `
-        <div class="activity-item">
-          <div class="activity-icon"><i data-lucide="mail"></i></div>
-          <div>
-            <div class="activity-title">
-              New inquiry from ${escapeHTML(customerName(message))}
-            </div>
-            <div class="activity-time">${escapeHTML(formatDate(messageDate(message)))}</div>
-          </div>
-        </div>
-      `).join("");
-
-      if (window.lucide) lucide.createIcons();
+      refreshIcons();
     }
 
-    // =========================================================
-    // VIEW MESSAGE DETAILS
-    // =========================================================
+    // ========================================================
+    // VIEW, REVIEW, AND DELETE FEEDBACK
+    // ========================================================
     async function viewMessage(id) {
-      selectedMessage = messages.find((message) => String(message.id) === String(id));
+      selectedMessage = messages.find(
+        (message) => String(message.id) === String(id)
+      );
+
       if (!selectedMessage) return;
 
       const message = selectedMessage;
+      const rating = Number(message.rating) || 0;
 
       $("messageDetails").innerHTML = `
-        <div class="detail-label">Customer</div>
+        <div class="detail-label">Customer name</div>
         <div class="detail-value">${escapeHTML(customerName(message))}</div>
 
-        <div class="detail-label">Email</div>
-        <div class="detail-value">${escapeHTML(customerEmail(message))}</div>
+        <div class="detail-label">Email address</div>
+        <div class="detail-value">${escapeHTML(customerEmail(message) || "Not provided")}</div>
 
-        <div class="detail-label">Received</div>
+        <div class="detail-label">Star rating</div>
+        <div class="rating-large" aria-label="${rating} out of 5 stars">${"★".repeat(rating)}${"☆".repeat(5 - rating)}</div>
+        <div class="detail-value">${rating} out of 5</div>
+
+        <div class="detail-label">Date submitted</div>
         <div class="detail-value">${escapeHTML(formatDate(messageDate(message)))}</div>
 
-        <div class="detail-label">Message</div>
-        <div class="detail-value">${escapeHTML(messageText(message) || "No message content")}</div>
+        <div class="detail-label">Customer feedback</div>
+        <div class="detail-value">${escapeHTML(messageText(message) || "No feedback message")}</div>
+
+        <div class="detail-label">Status</div>
+        <div class="detail-value">${isUnread(message) ? "New — not yet reviewed" : "Reviewed"}</div>
       `;
 
       $("markReadBtn").hidden = !isUnread(message);
       $("messageModal").classList.add("show");
+      refreshIcons();
 
       if (isUnread(message)) {
         await markMessageRead(message);
@@ -1100,9 +1015,12 @@
     async function markMessageRead(message) {
       if (!message || !isUnread(message)) return;
 
-      // Adapt the update if your schema uses a different read-status
-      // field. This assumes a boolean column named "is_read".
-      if (!("is_read" in message)) {
+      // The feedback table needs an is_read column for persistent review status.
+      if (!Object.prototype.hasOwnProperty.call(message, "is_read")) {
+        showToast(
+          "Add the is_read column to the feedback table to save review status.",
+          true
+        );
         $("markReadBtn").hidden = true;
         return;
       }
@@ -1113,25 +1031,34 @@
         .eq("id", message.id);
 
       if (error) {
-        console.error("Could not mark message as read:", error);
-        showToast("Could not update read status. Check your table policy.", true);
+        console.error("Mark feedback reviewed failed:", error);
+        showToast("Could not mark feedback as reviewed.", true);
         return;
       }
 
       message.is_read = true;
-      renderDashboard();
+      renderMessages();
+      renderAllFeedback();
+      renderActivity();
+
       $("markReadBtn").hidden = true;
-      showToast("Message marked as read.");
+      showToast("Feedback marked as reviewed.");
+
+      // Update status text in the open modal.
+      const statusValue = $("messageDetails").lastElementChild;
+      if (statusValue) statusValue.textContent = "Reviewed";
     }
 
     async function deleteMessage(id) {
-      const message = messages.find((item) => String(item.id) === String(id));
+      const message = messages.find(
+        (item) => String(item.id) === String(id)
+      );
+
       if (!message) return;
 
-      const confirmed = window.confirm(
-        `Delete the message from ${customerName(message)}? This cannot be undone.`
-      );
-      if (!confirmed) return;
+      if (!confirm(`Permanently delete feedback from ${customerName(message)}?`)) {
+        return;
+      }
 
       const { error } = await supabaseClient
         .from(MESSAGE_TABLE)
@@ -1139,95 +1066,53 @@
         .eq("id", message.id);
 
       if (error) {
-        console.error("Delete failed:", error);
-        showToast("Could not delete message. Check your Supabase permissions.", true);
+        console.error("Delete feedback failed:", error);
+        showToast("Could not delete feedback. Check your admin DELETE policy.", true);
         return;
       }
 
-      messages = messages.filter((item) => String(item.id) !== String(id));
-      renderDashboard();
-      showToast("Message deleted.");
+      messages = messages.filter(
+        (item) => String(item.id) !== String(id)
+      );
+
+      if (selectedMessage && String(selectedMessage.id) === String(id)) {
+        selectedMessage = null;
+        $("messageModal").classList.remove("show");
+      }
+
+      renderMessages();
+      renderAllFeedback();
+      renderActivity();
+      showToast("Feedback deleted.");
     }
 
-    // =========================================================
-    // EVENT LISTENERS
-    // =========================================================
-    $("messagesBody").addEventListener("click", async (event) => {
-      const button = event.target.closest("button[data-action]");
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-message-action]");
       if (!button) return;
 
-      const { action, id } = button.dataset;
+      const id = button.dataset.id;
+      const action = button.dataset.messageAction;
 
-      if (action === "view") await viewMessage(id);
-      if (action === "delete") await deleteMessage(id);
+      if (action === "view") {
+        await viewMessage(id);
+      } else if (action === "delete") {
+        await deleteMessage(id);
+      }
     });
 
     $("searchInput").addEventListener("input", renderMessages);
-
-    $("refreshBtn").addEventListener("click", async () => {
-      $("refreshBtn").disabled = true;
-
-      try {
-        const { data, error } = await supabaseClient.auth.getSession();
-
-        if (error || !data.session) {
-          window.location.replace("login.html");
-          return;
-        }
-
-        await loadMessages();
-        showToast("Dashboard refreshed.");
-      } finally {
-        $("refreshBtn").disabled = false;
-      }
-    });
+    $("feedbackSearch").addEventListener("input", renderAllFeedback);
+    $("ratingFilter").addEventListener("change", renderAllFeedback);
+    $("statusFilter").addEventListener("change", renderAllFeedback);
 
     $("allMessagesBtn").addEventListener("click", () => {
       showAllMessages = !showAllMessages;
       $("allMessagesBtn").textContent = showAllMessages ? "Show recent" : "View all";
       renderMessages();
-      $("messagesCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
-    $("logoutBtn").addEventListener("click", async () => {
-      const button = $("logoutBtn");
-      button.disabled = true;
-
-      const { error } = await supabaseClient.auth.signOut();
-
-      if (error) {
-        console.error("Sign out failed:", error);
-        showToast("Unable to sign out. Please try again.", true);
-        button.disabled = false;
-        return;
-      }
-
-      window.location.replace("login.html");
-    });
-
-    $("menuBtn").addEventListener("click", () => {
-      $("sidebar").classList.toggle("open");
-    });
-
-    document.querySelectorAll(".nav-item[data-section]").forEach((button) => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".nav-item[data-section]").forEach((item) => {
-          item.classList.remove("active");
-        });
-
-        button.classList.add("active");
-        const section = button.dataset.section;
-
-        if (section === "overview") {
-          $("overviewSection").scrollIntoView({ behavior: "smooth" });
-        } else if (section === "messages") {
-          $("messagesCard").scrollIntoView({ behavior: "smooth" });
-        } else if (section === "activity") {
-          $("activitySection").scrollIntoView({ behavior: "smooth" });
-        }
-
-        $("sidebar").classList.remove("open");
-      });
+    $("markReadBtn").addEventListener("click", async () => {
+      if (selectedMessage) await markMessageRead(selectedMessage);
     });
 
     $("closeModal").addEventListener("click", () => {
@@ -1244,29 +1129,421 @@
       }
     });
 
-    $("markReadBtn").addEventListener("click", async () => {
-      if (selectedMessage) await markMessageRead(selectedMessage);
+    $("refreshFeedbackBtn").addEventListener("click", loadMessages);
+
+    // ========================================================
+    // RECENT ACTIVITY
+    // ========================================================
+    function renderActivity() {
+      const latestFeedback = [...messages]
+        .sort((a, b) =>
+          new Date(messageDate(b) || 0) - new Date(messageDate(a) || 0)
+        )
+        .slice(0, 5)
+        .map((message) => ({
+          title: `Feedback from ${customerName(message)} (${Number(message.rating) || 0}/5 stars)`,
+          date: messageDate(message),
+          icon: "message-square"
+        }));
+
+      const latestProducts = [...products]
+        .sort((a, b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        )
+        .slice(0, 5)
+        .map((product) => ({
+          title: "Product: " + product.name,
+          date: product.created_at,
+          icon: "package"
+        }));
+
+      const latest = [...latestFeedback, ...latestProducts]
+        .sort((a, b) =>
+          new Date(b.date || 0) - new Date(a.date || 0)
+        )
+        .slice(0, 8);
+
+      if (!latest.length) {
+        $("activityList").innerHTML = `
+          <div class="empty-feedback">
+            <strong>No recent activity</strong>
+            <p>New customer feedback and products will appear here.</p>
+          </div>`;
+        return;
+      }
+
+      $("activityList").innerHTML = latest.map((item) => `
+        <div class="activity-item">
+          <div class="activity-icon"><i data-lucide="${item.icon}"></i></div>
+          <div>
+            <div class="activity-title">${escapeHTML(item.title)}</div>
+            <div class="activity-time">${escapeHTML(formatDate(item.date))}</div>
+          </div>
+        </div>
+      `).join("");
+
+      refreshIcons();
+    }
+
+    // ========================================================
+    // PRODUCTS CRUD: READ
+    // ========================================================
+    async function loadProducts() {
+      $("productsBody").innerHTML =
+        `<tr><td colspan="5">Loading products...</td></tr>`;
+
+      const { data, error } = await supabaseClient
+        .from("products")
+        .select("id, name, description, price, image_url, stock, is_available, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Load products error:", error);
+        $("productsBody").innerHTML = `
+          <tr><td colspan="5">
+            Could not load products: ${escapeHTML(error.message)}
+            <br><br>Check your products table, admin session, and RLS policies.
+          </td></tr>`;
+        showToast("Unable to load products.", true);
+        return;
+      }
+
+      products = data || [];
+      renderProducts();
+      renderActivity();
+    }
+
+    function renderProducts() {
+      const query = $("productSearch").value.trim().toLowerCase();
+
+      const filtered = products.filter((product) =>
+        `${product.name} ${product.description || ""}`
+          .toLowerCase().includes(query)
+      );
+
+      $("productTotal").textContent = products.length;
+      $("productAvailable").textContent =
+        products.filter((product) => product.is_available).length;
+      $("productOutOfStock").textContent =
+        products.filter((product) => Number(product.stock) === 0).length;
+
+      // Inventory value means the total value of all units in stock.
+      const inventoryValue = products.reduce(
+        (sum, product) =>
+          sum + Number(product.price) * Number(product.stock),
+        0
+      );
+
+      $("productValue").textContent = peso(inventoryValue);
+      $("overviewProducts").textContent = products.length;
+
+      if (!filtered.length) {
+        $("productsBody").innerHTML = `
+          <tr><td colspan="5">
+            <div class="empty-feedback">
+              <strong>No products found</strong>
+              <p>Add a product or change your search.</p>
+            </div>
+          </td></tr>`;
+        refreshIcons();
+        return;
+      }
+
+      $("productsBody").innerHTML = filtered.map((product) => {
+        const image = safeImageURL(product.image_url);
+
+        const thumbnail = image
+          ? `<img class="product-thumbnail" src="${escapeHTML(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+          : `<div class="product-thumbnail" aria-hidden="true">🍍</div>`;
+
+        return `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:11px;min-width:190px">
+                ${thumbnail}
+                <div>
+                  <div class="customer-name">${escapeHTML(product.name)}</div>
+                  <span class="customer-email">${escapeHTML((product.description || "").slice(0, 70))}</span>
+                </div>
+              </div>
+            </td>
+
+            <td><strong>${peso(product.price)}</strong></td>
+            <td>${Number(product.stock)}</td>
+
+            <td>
+              <span class="status ${product.is_available ? "status-read" : "status-unread"}">
+                ${product.is_available ? "Available" : "Unavailable"}
+              </span>
+            </td>
+
+            <td>
+              <div class="row-actions">
+                <button class="icon-btn" type="button"
+                  data-product-action="edit" data-id="${escapeHTML(product.id)}"
+                  title="Edit product" aria-label="Edit product">
+                  <i data-lucide="pencil"></i>
+                </button>
+
+                <button class="icon-btn" type="button"
+                  data-product-action="toggle" data-id="${escapeHTML(product.id)}"
+                  title="Toggle availability" aria-label="Toggle availability">
+                  <i data-lucide="${product.is_available ? "eye-off" : "eye"}"></i>
+                </button>
+
+                <button class="icon-btn delete" type="button"
+                  data-product-action="delete" data-id="${escapeHTML(product.id)}"
+                  title="Delete product" aria-label="Delete product">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join("");
+
+      refreshIcons();
+    }
+
+    // ========================================================
+    // PRODUCTS CRUD: CREATE / UPDATE
+    // ========================================================
+    function openProductModal(product = null) {
+      $("productForm").reset();
+
+      $("productId").value = product?.id ?? "";
+      $("productName").value = product?.name ?? "";
+      $("productDescription").value = product?.description ?? "";
+      $("productPrice").value = product?.price ?? "";
+      $("productStock").value = product?.stock ?? 0;
+      $("productImage").value = product?.image_url ?? "";
+      $("productIsAvailable").checked = product?.is_available ?? true;
+
+      $("productModalTitle").textContent = product ? "Edit Product" : "Add Product";
+      $("saveProductBtn").textContent = product ? "Update Product" : "Save Product";
+      $("productModal").classList.add("show");
+
+      refreshIcons();
+    }
+
+    function closeProductModal() {
+      $("productModal").classList.remove("show");
+    }
+
+    $("addProductBtn").addEventListener("click", () => openProductModal());
+    $("closeProductModal").addEventListener("click", closeProductModal);
+    $("cancelProductBtn").addEventListener("click", closeProductModal);
+
+    $("productModal").addEventListener("click", (event) => {
+      if (event.target === $("productModal")) closeProductModal();
+    });
+
+    $("productSearch").addEventListener("input", renderProducts);
+    $("refreshProductsBtn").addEventListener("click", loadProducts);
+
+    $("productForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const id = $("productId").value;
+      const name = $("productName").value.trim();
+      const description = $("productDescription").value.trim();
+      const price = Number($("productPrice").value);
+      const stock = Number($("productStock").value);
+      const rawImageURL = $("productImage").value.trim();
+      const is_available = $("productIsAvailable").checked;
+
+      if (!name) {
+        showToast("Enter a product name.", true);
+        return;
+      }
+
+      if (!Number.isFinite(price) || price < 0 || price > 99999999.99) {
+        showToast("Enter a valid product price.", true);
+        return;
+      }
+
+      if (!Number.isInteger(stock) || stock < 0 || stock > 2147483647) {
+        showToast("Stock must be a non-negative whole number.", true);
+        return;
+      }
+
+      let image_url = null;
+
+      if (rawImageURL) {
+        image_url = safeImageURL(rawImageURL);
+
+        if (!image_url) {
+          showToast("Use a valid HTTP or HTTPS image URL.", true);
+          return;
+        }
+      }
+
+      const productData = {
+        name,
+        description: description || null,
+        price,
+        stock,
+        image_url,
+        is_available
+      };
+
+      const button = $("saveProductBtn");
+      button.disabled = true;
+      button.textContent = id ? "Updating..." : "Saving...";
+
+      try {
+        let error;
+
+        if (id) {
+          ({ error } = await supabaseClient
+            .from("products")
+            .update(productData)
+            .eq("id", Number(id)));
+        } else {
+          ({ error } = await supabaseClient
+            .from("products")
+            .insert(productData));
+        }
+
+        if (error) {
+          console.error("Save product error:", error);
+          showToast(error.message || "Could not save product.", true);
+          return;
+        }
+
+        closeProductModal();
+        await loadProducts();
+
+        showToast(id ? "Product updated successfully." : "Product created successfully.");
+      } finally {
+        button.disabled = false;
+        button.textContent = id ? "Update Product" : "Save Product";
+      }
+    });
+
+    // ========================================================
+    // PRODUCTS CRUD: TOGGLE / DELETE
+    // ========================================================
+    $("productsBody").addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-product-action]");
+      if (!button) return;
+
+      const id = button.dataset.id;
+      const action = button.dataset.productAction;
+      const product = products.find(
+        (item) => String(item.id) === String(id)
+      );
+
+      if (!product) return;
+
+      if (action === "edit") {
+        openProductModal(product);
+        return;
+      }
+
+      if (action === "toggle") {
+        const { error } = await supabaseClient
+          .from("products")
+          .update({ is_available: !product.is_available })
+          .eq("id", product.id);
+
+        if (error) {
+          console.error(error);
+          showToast("Could not update availability.", true);
+          return;
+        }
+
+        showToast(
+          product.is_available
+            ? "Product is now unavailable."
+            : "Product is now available."
+        );
+
+        await loadProducts();
+        return;
+      }
+
+      if (action === "delete") {
+        if (!confirm(`Permanently delete "${product.name}"? This cannot be undone.`)) {
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("products")
+          .delete()
+          .eq("id", product.id);
+
+        if (error) {
+          console.error(error);
+          showToast("Could not delete product. Check admin permissions.", true);
+          return;
+        }
+
+        showToast("Product deleted successfully.");
+        await loadProducts();
+      }
+    });
+
+    // ========================================================
+    // REFRESH / LOGOUT / KEYBOARD
+    // ========================================================
+    $("refreshBtn").addEventListener("click", async () => {
+      $("refreshBtn").disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error || !data.session) {
+          window.location.replace("login.html");
+          return;
+        }
+
+        await Promise.all([loadMessages(), loadProducts()]);
+        showToast("Dashboard refreshed.");
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      const button = $("logoutBtn");
+      button.disabled = true;
+
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        console.error(error);
+        showToast("Unable to sign out. Please try again.", true);
+        button.disabled = false;
+        return;
+      }
+
+      window.location.replace("login.html");
     });
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         $("messageModal").classList.remove("show");
+        $("productModal").classList.remove("show");
       }
     });
 
-    // =========================================================
+    // ========================================================
     // STARTUP
-    // =========================================================
+    // ========================================================
     async function init() {
       $("year").textContent = new Date().getFullYear();
-
-      if (window.lucide) lucide.createIcons();
+      refreshIcons();
 
       try {
         const isAdmin = await verifyAdmin();
         if (!isAdmin) return;
 
-        await loadMessages();
+        await Promise.all([
+          loadMessages(),
+          loadProducts()
+        ]);
+
+        renderActivity();
       } catch (error) {
         console.error("Dashboard initialization failed:", error);
         showToast("An error occurred while loading the dashboard.", true);
